@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `${author.name} | NSRCEL Founder Directory`,
+    title: author.name,
     description: author.bio || `Stories by ${author.name}`,
     alternates: {
       canonical: absoluteUrl(`/authors/${author.slug}`),

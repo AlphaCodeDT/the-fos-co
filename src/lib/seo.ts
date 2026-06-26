@@ -2,6 +2,7 @@ import type { Media, Story, User } from '@/payload-types'
 import type { CommunityTrustFields } from '@/lib/trust'
 import { shouldNoIndexCommunityProfile } from '@/lib/trust'
 
+import { siteConfig } from '@/lib/site'
 import { absoluteUrl } from '@/lib/url'
 
 type StorySEOInput = Pick<Story, 'title' | 'excerpt' | 'slug' | 'publishedDate' | 'seo'> & {
@@ -123,5 +124,10 @@ export function buildArticleJsonLd(story: StorySEOInput) {
     mainEntityOfPage: absoluteUrl(`/stories/${story.slug}`),
     author,
     image,
+    publisher: {
+      '@type': 'Organization',
+      name: siteConfig.name,
+      url: absoluteUrl('/'),
+    },
   }
 }

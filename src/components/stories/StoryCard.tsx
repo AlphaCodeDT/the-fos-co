@@ -3,6 +3,8 @@ import Link from 'next/link'
 
 import type { Category, Media, Story, User } from '@/payload-types'
 
+import { resolveMediaUrl } from '@/lib/url'
+
 type StoryCardProps = {
   story: Pick<Story, 'title' | 'slug' | 'excerpt' | 'publishedDate'> & {
     featuredImage?: Media | number | null
@@ -22,7 +24,7 @@ function formatDate(value: string) {
 export function StoryCard({ story }: StoryCardProps) {
   const image =
     story.featuredImage && typeof story.featuredImage === 'object'
-      ? story.featuredImage.sizes?.card?.url || story.featuredImage.url
+      ? resolveMediaUrl(story.featuredImage.sizes?.card?.url || story.featuredImage.url)
       : null
 
   const authorName =

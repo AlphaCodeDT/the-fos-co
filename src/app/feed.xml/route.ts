@@ -1,5 +1,6 @@
 import { getPublishedStoriesForFeed } from '@/lib/data/stories'
 import { storyShouldNoIndex } from '@/lib/seo'
+import { siteConfig } from '@/lib/site'
 import { absoluteUrl } from '@/lib/url'
 
 function escapeXml(value: string) {
@@ -41,9 +42,9 @@ export async function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
-    <title>NSRCEL Founder Directory</title>
+    <title>${escapeXml(siteConfig.name)}</title>
     <link>${siteUrl}</link>
-    <description>Founder stories, interviews, and startup news.</description>
+    <description>${escapeXml(siteConfig.rssDescription)}</description>
     <language>en-in</language>
     <lastBuildDate>${buildDate}</lastBuildDate>
     <atom:link href="${feedUrl}" rel="self" type="application/rss+xml" xmlns:atom="http://www.w3.org/2005/Atom" />

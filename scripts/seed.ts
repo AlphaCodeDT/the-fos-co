@@ -71,7 +71,7 @@ async function seed() {
         name: adminName,
         slug: 'platform-admin',
         role: 'admin',
-        bio: 'Editorial lead for the NSRCEL Founder Directory.',
+        bio: 'Editorial lead for Founders of Startups.',
       },
     })
     adminId = admin.id

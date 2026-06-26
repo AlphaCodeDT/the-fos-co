@@ -7,7 +7,7 @@ import { getPublishedStories } from '@/lib/data/stories'
 import { absoluteUrl } from '@/lib/url'
 
 export const metadata: Metadata = {
-  title: 'Stories | NSRCEL Founder Directory',
+  title: 'Stories',
   description: 'Founder stories, interviews, and startup news from the ecosystem.',
   alternates: {
     canonical: absoluteUrl('/stories'),

@@ -5,14 +5,19 @@ import { SiteFooter, SiteHeader } from '@/components/layout/site-chrome'
 import { NewsletterSignup } from '@/components/newsletter/NewsletterSignup'
 import { StoryCard } from '@/components/stories/StoryCard'
 import { getPublishedStories } from '@/lib/data/stories'
+import { buildOrganizationJsonLd, siteConfig } from '@/lib/site'
 import { absoluteUrl } from '@/lib/url'
 
 export const metadata: Metadata = {
-  title: 'NSRCEL Founder Directory | Discover, Learn, Connect',
-  description:
-    'Founder stories, startup news, and ecosystem insights from NSRCEL and beyond.',
+  title: siteConfig.homeTitle,
+  description: siteConfig.description,
   alternates: {
     canonical: absoluteUrl('/'),
+  },
+  openGraph: {
+    title: `${siteConfig.homeTitle} · ${siteConfig.name}`,
+    description: siteConfig.description,
+    url: absoluteUrl('/'),
   },
 }
 
@@ -20,9 +25,14 @@ export const revalidate = 60
 
 export default async function HomePage() {
   const { docs: stories } = await getPublishedStories(6)
+  const organizationJsonLd = buildOrganizationJsonLd()
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
       <SiteHeader />
       <main className="flex-1">
         <section className="border-b border-brand-white/10 bg-gradient-to-b from-brand-black to-brand-black/90">
@@ -31,12 +41,9 @@ export default async function HomePage() {
               Startup Ecosystem Platform
             </p>
             <h1 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight text-brand-white md:text-6xl">
-              Discover founders. Learn from stories. Connect with opportunity.
+              {siteConfig.heroHeadline}
             </h1>
-            <p className="mt-6 max-w-2xl text-lg text-brand-white/70">
-              NSRCEL Founder Directory is the editorial home for founder journeys, startup news,
-              and ecosystem intelligence — built for multi-organization scale from day one.
-            </p>
+            <p className="mt-6 max-w-2xl text-lg text-brand-white/70">{siteConfig.heroDescription}</p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
                 href="/stories"

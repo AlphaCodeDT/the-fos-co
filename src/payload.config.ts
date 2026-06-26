@@ -1,3 +1,5 @@
+import 'dotenv/config'
+
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -8,6 +10,7 @@ import sharp from 'sharp'
 
 import { collections } from '@/collections'
 import { Users } from '@/collections/Users'
+import { createPgDriver, createPostgresPoolConfig } from '@/lib/db-pool'
 import { createS3StoragePlugin } from '@/lib/storage'
 
 const filename = fileURLToPath(import.meta.url)
@@ -28,9 +31,8 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: postgresAdapter({
-    pool: {
-      connectionString: process.env.DATABASE_URL || '',
-    },
+    pool: createPostgresPoolConfig(),
+    pg: createPgDriver(),
     push: false,
     migrationDir: path.resolve(dirname, 'migrations'),
   }),

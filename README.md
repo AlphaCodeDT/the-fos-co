@@ -1,4 +1,4 @@
-# NSRCEL Founder Directory
+# Founders of Startups
 
 A multi-organization **Startup Ecosystem Platform** built with Next.js (App Router), Payload CMS 3, PostgreSQL on Supabase, and S3-compatible media storage.
 
