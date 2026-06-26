@@ -4,7 +4,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { buildSiteMetadata } from '@/lib/site'
 import { absoluteUrl } from '@/lib/url'
 
-import '../globals.css'
+import './site.css'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -29,7 +29,9 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-brand-black text-brand-white">{children}</body>
+      <body className="site-root min-h-full flex flex-col bg-brand-black text-brand-white">
+        {children}
+      </body>
     </html>
   )
 }

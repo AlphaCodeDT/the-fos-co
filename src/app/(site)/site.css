@@ -1,12 +1,7 @@
-@import "tailwindcss";
+/* Site-only styles — imported exclusively from (site)/layout.tsx */
+@layer theme, base, components, utilities;
 
-:root {
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --brand-black: #0a0a0a;
-  --brand-yellow: #f5c518;
-  --brand-white: #fafafa;
-}
+@import "tailwindcss/theme.css" layer(theme);
 
 @theme inline {
   --color-background: var(--background);
@@ -18,13 +13,22 @@
   --font-mono: var(--font-geist-mono);
 }
 
-body {
+.site-root {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --brand-black: #0a0a0a;
+  --brand-yellow: #f5c518;
+  --brand-white: #fafafa;
+
+  @import "tailwindcss/preflight.css" layer(base);
+  @import "tailwindcss/utilities.css" layer(utilities);
+
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-.sr-only {
+.site-root .sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
