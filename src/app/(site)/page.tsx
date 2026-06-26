@@ -46,14 +46,17 @@ export default async function HomePage() {
             <p className="mt-6 max-w-2xl text-lg text-brand-white/70">{siteConfig.heroDescription}</p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
-                href="/stories"
+                href="/founders"
                 className="inline-flex h-11 items-center rounded-md bg-brand-yellow px-6 text-sm font-semibold text-brand-black hover:bg-brand-yellow/90"
               >
-                Read founder stories
+                Browse founders
               </Link>
-              <span className="inline-flex h-11 items-center rounded-md border border-brand-white/20 px-6 text-sm text-brand-white/60">
-                Directory & profiles — coming in Phase 2
-              </span>
+              <Link
+                href="/startups"
+                className="inline-flex h-11 items-center rounded-md border border-brand-white/20 px-6 text-sm font-medium text-brand-white hover:border-brand-yellow hover:text-brand-yellow"
+              >
+                Explore startups
+              </Link>
             </div>
           </div>
         </section>

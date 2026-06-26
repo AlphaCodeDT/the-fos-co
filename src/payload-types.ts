@@ -234,7 +234,21 @@ export interface Founder {
   name: string;
   slug: string;
   headline?: string | null;
-  bio?: string | null;
+  bio?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   avatar?: (number | null) | Media;
   gender?: ('female' | 'male' | 'non-binary' | 'prefer-not-to-say' | 'other') | null;
   city?: string | null;
@@ -314,7 +328,21 @@ export interface Startup {
   slug: string;
   logo?: (number | null) | Media;
   tagline?: string | null;
-  description?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   website?: string | null;
   industry?: (number | null) | Industry;
   stage?: ('idea' | 'mvp' | 'early-revenue' | 'growth' | 'scaling') | null;

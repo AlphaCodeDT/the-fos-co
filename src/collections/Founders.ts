@@ -39,7 +39,7 @@ export const Founders: CollectionConfig = {
     },
     {
       name: 'bio',
-      type: 'textarea',
+      type: 'richText',
     },
     {
       name: 'avatar',

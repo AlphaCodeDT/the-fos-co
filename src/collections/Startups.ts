@@ -28,6 +28,7 @@ export const Startups: CollectionConfig = {
     { fields: ['industry'] },
     { fields: ['isHiring'] },
     { fields: ['isRaising'] },
+    { fields: ['isLookingForCoFounder'] },
     { fields: ['womenLed'] },
     { fields: ['moderationStatus'] },
     { fields: ['verificationStatus'] },
@@ -51,7 +52,7 @@ export const Startups: CollectionConfig = {
     },
     {
       name: 'description',
-      type: 'textarea',
+      type: 'richText',
     },
     {
       name: 'website',
@@ -129,6 +130,7 @@ export const Startups: CollectionConfig = {
       name: 'isLookingForCoFounder',
       type: 'checkbox',
       defaultValue: false,
+      index: true,
     },
     {
       name: 'team',

@@ -1,11 +1,20 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { ChipList } from '@/components/community/ChipList'
+import { CommunityProfileContent } from '@/components/community/CommunityProfileContent'
+import { OpportunityBadges } from '@/components/community/OpportunityBadges'
 import { TrustBadge } from '@/components/community/TrustBadge'
+import { WomenLedBadge } from '@/components/community/WomenLedBadge'
 import { SiteFooter, SiteHeader } from '@/components/layout/site-chrome'
-import { getApprovedStartupBySlug } from '@/lib/data/community'
-import { buildCommunityProfileMetadata } from '@/lib/seo'
+import { formatTeamRole } from '@/lib/community'
+import { getStartupBySlug } from '@/lib/data/community'
+import { lexicalToPlainText } from '@/lib/richtext'
+import { buildCommunityProfileMetadata, buildStartupOrganizationJsonLd } from '@/lib/seo'
+import { isIndexable } from '@/lib/trust'
+import { resolveMediaUrl } from '@/lib/url'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,8 +24,7 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const result = await getApprovedStartupBySlug(slug)
-  const startup = result.docs[0]
+  const startup = await getStartupBySlug(slug)
 
   if (!startup) {
     return {
@@ -30,7 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       name: startup.name,
       slug: startup.slug,
       tagline: startup.tagline,
-      description: startup.description,
+      descriptionPlainText: lexicalToPlainText(startup.description),
       moderationStatus: startup.moderationStatus,
       verificationStatus: startup.verificationStatus,
     },
@@ -40,18 +48,34 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function StartupProfilePage({ params }: PageProps) {
   const { slug } = await params
-  const result = await getApprovedStartupBySlug(slug)
-  const startup = result.docs[0]
+  const startup = await getStartupBySlug(slug)
 
   if (!startup) notFound()
 
   const logo =
     startup.logo && typeof startup.logo === 'object'
-      ? startup.logo.sizes?.thumb?.url || startup.logo.url
+      ? resolveMediaUrl(startup.logo.sizes?.thumb?.url || startup.logo.url)
       : null
+
+  const team = [...(startup.team || [])].sort((a, b) => {
+    if (a.isPrimary && !b.isPrimary) return -1
+    if (!a.isPrimary && b.isPrimary) return 1
+    return 0
+  })
+
+  const descriptionPlainText = lexicalToPlainText(startup.description)
+  const jsonLd = isIndexable(startup)
+    ? buildStartupOrganizationJsonLd(startup, descriptionPlainText)
+    : null
 
   return (
     <>
+      {jsonLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      ) : null}
       <SiteHeader />
       <main className="mx-auto max-w-3xl flex-1 px-4 py-12">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
@@ -71,6 +95,7 @@ export default async function StartupProfilePage({ params }: PageProps) {
                 moderationStatus={startup.moderationStatus}
                 verificationStatus={startup.verificationStatus}
               />
+              <WomenLedBadge womenLed={startup.womenLed} />
             </div>
             {startup.tagline ? (
               <p className="text-lg text-brand-white/70">{startup.tagline}</p>
@@ -80,13 +105,67 @@ export default async function StartupProfilePage({ params }: PageProps) {
                 {[startup.city, startup.state, startup.country].filter(Boolean).join(', ')}
               </p>
             ) : null}
+            <OpportunityBadges startup={startup} className="pt-1" />
           </div>
         </div>
+
+        {startup.industry || startup.organizations?.length ? (
+          <div className="mt-8 space-y-4">
+            {startup.industry ? (
+              <div>
+                <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-yellow">
+                  Industry
+                </h2>
+                <ChipList items={[startup.industry]} />
+              </div>
+            ) : null}
+            {startup.organizations?.length ? (
+              <div>
+                <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-yellow">
+                  Organizations
+                </h2>
+                <ChipList items={startup.organizations} />
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         {startup.description ? (
           <div className="mt-10 border-t border-brand-white/10 pt-8">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-brand-yellow">About</h2>
-            <p className="mt-3 whitespace-pre-wrap text-brand-white/80">{startup.description}</p>
+            <div className="mt-3">
+              <CommunityProfileContent content={startup.description} />
+            </div>
+          </div>
+        ) : null}
+
+        {team.length > 0 ? (
+          <div className="mt-10 border-t border-brand-white/10 pt-8">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-brand-yellow">Team</h2>
+            <ul className="mt-4 space-y-3">
+              {team.map((member, index) => {
+                const founder =
+                  member.founder && typeof member.founder === 'object' ? member.founder : null
+
+                if (!founder) return null
+
+                return (
+                  <li key={`${founder.id}-${index}`}>
+                    <Link
+                      href={`/founders/${founder.slug}`}
+                      className={`flex items-center justify-between rounded-xl border px-4 py-3 transition-colors hover:border-brand-yellow/40 ${
+                        member.isPrimary
+                          ? 'border-brand-yellow/40 bg-brand-yellow/5'
+                          : 'border-brand-white/10 bg-brand-black/60'
+                      }`}
+                    >
+                      <span className="font-medium text-brand-white">{founder.name}</span>
+                      <span className="text-sm text-brand-yellow">{formatTeamRole(member.role)}</span>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
         ) : null}
       </main>

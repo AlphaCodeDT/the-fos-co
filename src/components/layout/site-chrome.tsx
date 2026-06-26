@@ -4,6 +4,8 @@ import { siteConfig } from '@/lib/site'
 import { cn } from '@/lib/utils'
 
 const navItems = [
+  { href: '/founders', label: 'Founders' },
+  { href: '/startups', label: 'Startups' },
   { href: '/stories', label: 'Stories' },
   { href: '/feed.xml', label: 'RSS' },
 ]

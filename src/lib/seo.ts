@@ -1,9 +1,9 @@
-import type { Media, Story, User } from '@/payload-types'
+import type { Founder, Media, Startup, Story, User } from '@/payload-types'
 import type { CommunityTrustFields } from '@/lib/trust'
 import { shouldNoIndexCommunityProfile } from '@/lib/trust'
 
 import { siteConfig } from '@/lib/site'
-import { absoluteUrl } from '@/lib/url'
+import { absoluteUrl, resolveMediaUrl } from '@/lib/url'
 
 type StorySEOInput = Pick<Story, 'title' | 'excerpt' | 'slug' | 'publishedDate' | 'seo'> & {
   featuredImage?: Media | number | null
@@ -15,8 +15,8 @@ type CommunityProfileSEOInput = CommunityTrustFields & {
   slug: string
   headline?: string | null
   tagline?: string | null
-  bio?: string | null
-  description?: string | null
+  bioPlainText?: string | null
+  descriptionPlainText?: string | null
 }
 
 export function storyShouldNoIndex(story: { seo?: StorySEOInput['seo'] | null }): boolean {
@@ -29,7 +29,11 @@ export function buildCommunityProfileMetadata(
 ) {
   const title = record.name
   const description =
-    record.headline || record.tagline || record.bio || record.description || undefined
+    record.headline ||
+    record.tagline ||
+    record.bioPlainText ||
+    record.descriptionPlainText ||
+    undefined
   const canonical = absoluteUrl(`/${pathPrefix}/${record.slug}`)
   const noindex = shouldNoIndexCommunityProfile(record)
 
@@ -129,5 +133,63 @@ export function buildArticleJsonLd(story: StorySEOInput) {
       name: siteConfig.name,
       url: absoluteUrl('/'),
     },
+  }
+}
+
+export function buildFounderPersonJsonLd(founder: Founder) {
+  const image =
+    founder.avatar && typeof founder.avatar === 'object'
+      ? resolveMediaUrl(founder.avatar.sizes?.og?.url || founder.avatar.url)
+      : undefined
+
+  const affiliations = (founder.organizations || [])
+    .map((org) =>
+      typeof org === 'object' && org !== null
+        ? { '@type': 'Organization' as const, name: org.name }
+        : null,
+    )
+    .filter((org): org is { '@type': 'Organization'; name: string } => org !== null)
+
+  const sameAs = [founder.linkedIn, founder.twitter, founder.website].filter(
+    (url): url is string => Boolean(url),
+  )
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: founder.name,
+    jobTitle: founder.headline || undefined,
+    url: absoluteUrl(`/founders/${founder.slug}`),
+    image,
+    affiliation: affiliations.length > 0 ? affiliations : undefined,
+    sameAs: sameAs.length > 0 ? sameAs : undefined,
+  }
+}
+
+export function buildStartupOrganizationJsonLd(
+  startup: Startup,
+  descriptionPlainText?: string,
+) {
+  const logo =
+    startup.logo && typeof startup.logo === 'object'
+      ? resolveMediaUrl(startup.logo.sizes?.og?.url || startup.logo.url)
+      : undefined
+
+  const memberOf = (startup.organizations || [])
+    .map((org) =>
+      typeof org === 'object' && org !== null
+        ? { '@type': 'Organization' as const, name: org.name }
+        : null,
+    )
+    .filter((org): org is { '@type': 'Organization'; name: string } => org !== null)
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: startup.name,
+    description: descriptionPlainText || startup.tagline || undefined,
+    url: startup.website || absoluteUrl(`/startups/${startup.slug}`),
+    logo,
+    memberOf: memberOf.length > 0 ? memberOf : undefined,
   }
 }

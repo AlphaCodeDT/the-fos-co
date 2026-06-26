@@ -16,6 +16,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
+      url: absoluteUrl('/founders'),
+      changeFrequency: 'daily',
+      priority: 0.85,
+    },
+    {
+      url: absoluteUrl('/startups'),
+      changeFrequency: 'daily',
+      priority: 0.85,
+    },
+    {
       url: absoluteUrl('/stories'),
       changeFrequency: 'daily',
       priority: 0.9,

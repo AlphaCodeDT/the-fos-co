@@ -132,6 +132,268 @@ async function seed() {
 
   console.log(`Linked ${nsrcel.name} → IIM Bangalore`)
 
+  const industryData = [
+    { name: 'FinTech', slug: 'fintech' },
+    { name: 'HealthTech', slug: 'healthtech' },
+    { name: 'SaaS', slug: 'saas' },
+    { name: 'Climate', slug: 'climate' },
+    { name: 'EdTech', slug: 'edtech' },
+  ]
+
+  const industryIds: Record<string, number> = {}
+
+  for (const industry of industryData) {
+    const existing = await payload.find({
+      collection: 'industries',
+      where: { slug: { equals: industry.slug } },
+      limit: 1,
+    })
+
+    if (existing.docs[0]) {
+      industryIds[industry.slug] = existing.docs[0].id
+      console.log(`Industry exists: ${industry.name}`)
+    } else {
+      const created = await payload.create({ collection: 'industries', data: industry })
+      industryIds[industry.slug] = created.id
+      console.log(`Created industry: ${industry.name}`)
+    }
+  }
+
+  const founderData = [
+    {
+      name: 'Ananya Sharma',
+      slug: 'ananya-sharma',
+      email: 'ananya@example.com',
+      password: 'founder123',
+      headline: 'CEO & Co-Founder',
+      city: 'Bengaluru',
+      state: 'Karnataka',
+      country: 'India',
+      linkedIn: 'https://linkedin.com/in/ananya-sharma',
+      industries: [industryIds.fintech],
+      organizations: [organizationIds.nsrcel],
+      moderationStatus: 'approved' as const,
+      verificationStatus: 'verified' as const,
+      bio: richText([
+        'Ananya builds payments infrastructure for Indian SMBs. Previously led product at a Series B fintech.',
+      ]),
+    },
+    {
+      name: 'Rahul Menon',
+      slug: 'rahul-menon',
+      email: 'rahul@example.com',
+      password: 'founder123',
+      headline: 'Founder',
+      city: 'Bengaluru',
+      country: 'India',
+      industries: [industryIds.healthtech],
+      organizations: [organizationIds.nsrcel],
+      moderationStatus: 'approved' as const,
+      verificationStatus: 'pending' as const,
+      bio: richText(['Rahul is building accessible diagnostics tools for tier-2 clinics.']),
+    },
+    {
+      name: 'Priya Nair',
+      slug: 'priya-nair',
+      email: 'priya@example.com',
+      password: 'founder123',
+      headline: 'CTO & Co-Founder',
+      city: 'Bengaluru',
+      country: 'India',
+      twitter: 'https://twitter.com/priyanair',
+      industries: [industryIds.saas, industryIds.edtech],
+      organizations: [organizationIds['iim-bangalore']],
+      moderationStatus: 'approved' as const,
+      verificationStatus: 'verified' as const,
+      bio: richText(['Priya engineers learning platforms used by 50k+ students across India.']),
+    },
+    {
+      name: 'Vikram Patel',
+      slug: 'vikram-patel',
+      email: 'vikram@example.com',
+      password: 'founder123',
+      headline: 'Advisor',
+      city: 'Mumbai',
+      country: 'India',
+      industries: [industryIds.climate],
+      organizations: [organizationIds.nsrcel],
+      moderationStatus: 'approved' as const,
+      verificationStatus: 'verified' as const,
+      bio: richText(['Climate tech operator advising early teams on go-to-market and partnerships.']),
+    },
+    {
+      name: 'Meera Iyer',
+      slug: 'meera-iyer',
+      email: 'meera@example.com',
+      password: 'founder123',
+      headline: 'CEO',
+      city: 'Bengaluru',
+      country: 'India',
+      website: 'https://example.com/meera',
+      industries: [industryIds.healthtech],
+      organizations: [organizationIds.nsrcel],
+      moderationStatus: 'approved' as const,
+      verificationStatus: 'pending' as const,
+      bio: richText(['Meera is scaling a women-led health platform connecting patients to specialists.']),
+    },
+  ]
+
+  const founderIds: Record<string, number> = {}
+
+  for (const founder of founderData) {
+    const existing = await payload.find({
+      collection: 'founders',
+      where: { slug: { equals: founder.slug } },
+      limit: 1,
+    })
+
+    if (existing.docs[0]) {
+      founderIds[founder.slug] = existing.docs[0].id
+      console.log(`Founder exists: ${founder.name}`)
+    } else {
+      const created = await payload.create({ collection: 'founders', data: founder })
+      founderIds[founder.slug] = created.id
+      console.log(`Created founder: ${founder.name}`)
+    }
+  }
+
+  const startupData = [
+    {
+      name: 'PayFlow India',
+      slug: 'payflow-india',
+      tagline: 'Payments for every storefront',
+      industry: industryIds.fintech,
+      organizations: [organizationIds.nsrcel],
+      city: 'Bengaluru',
+      country: 'India',
+      womenLed: false,
+      isHiring: true,
+      isRaising: false,
+      isLookingForCoFounder: false,
+      moderationStatus: 'approved' as const,
+      verificationStatus: 'verified' as const,
+      team: [{ founder: founderIds['ananya-sharma'], role: 'ceo' as const, isPrimary: true }],
+      description: richText(['PayFlow helps Indian SMBs accept UPI and card payments with same-day settlement.']),
+    },
+    {
+      name: 'ClinicBridge',
+      slug: 'clinicbridge',
+      tagline: 'Diagnostics made accessible',
+      industry: industryIds.healthtech,
+      organizations: [organizationIds.nsrcel],
+      city: 'Bengaluru',
+      country: 'India',
+      womenLed: true,
+      isHiring: false,
+      isRaising: true,
+      isLookingForCoFounder: true,
+      moderationStatus: 'approved' as const,
+      verificationStatus: 'verified' as const,
+      team: [
+        { founder: founderIds['meera-iyer'], role: 'founder' as const, isPrimary: true },
+        { founder: founderIds['rahul-menon'], role: 'co-founder' as const, isPrimary: false },
+      ],
+      description: richText(['ClinicBridge connects tier-2 clinics to affordable diagnostic networks.']),
+    },
+    {
+      name: 'LearnLoop',
+      slug: 'learnloop',
+      tagline: 'Adaptive learning for classrooms',
+      industry: industryIds.edtech,
+      organizations: [organizationIds['iim-bangalore']],
+      city: 'Bengaluru',
+      country: 'India',
+      womenLed: false,
+      isHiring: true,
+      isRaising: true,
+      isLookingForCoFounder: false,
+      moderationStatus: 'approved' as const,
+      verificationStatus: 'verified' as const,
+      team: [{ founder: founderIds['priya-nair'], role: 'cto' as const, isPrimary: true }],
+      description: richText(['LearnLoop personalizes curriculum paths for K-12 students at scale.']),
+    },
+    {
+      name: 'GreenGrid',
+      slug: 'greengrid',
+      tagline: 'Clean energy for commercial buildings',
+      industry: industryIds.climate,
+      organizations: [organizationIds.nsrcel],
+      city: 'Mumbai',
+      country: 'India',
+      womenLed: false,
+      isHiring: false,
+      isRaising: false,
+      isLookingForCoFounder: false,
+      moderationStatus: 'approved' as const,
+      verificationStatus: 'pending' as const,
+      team: [{ founder: founderIds['vikram-patel'], role: 'advisor' as const, isPrimary: true }],
+      description: richText(['GreenGrid optimizes solar deployment for mid-size commercial properties.']),
+    },
+    {
+      name: 'StackPilot',
+      slug: 'stackpilot',
+      tagline: 'DevOps for lean teams',
+      industry: industryIds.saas,
+      organizations: [organizationIds.nsrcel],
+      city: 'Bengaluru',
+      country: 'India',
+      womenLed: false,
+      isHiring: false,
+      isRaising: false,
+      isLookingForCoFounder: true,
+      moderationStatus: 'approved' as const,
+      verificationStatus: 'pending' as const,
+      team: [
+        { founder: founderIds['priya-nair'], role: 'advisor' as const, isPrimary: false },
+        { founder: founderIds['rahul-menon'], role: 'founder' as const, isPrimary: true },
+      ],
+      description: richText(['StackPilot automates CI/CD workflows for early-stage SaaS teams.']),
+    },
+  ]
+
+  const startupIds: Record<string, number> = {}
+
+  for (const startup of startupData) {
+    const existing = await payload.find({
+      collection: 'startups',
+      where: { slug: { equals: startup.slug } },
+      limit: 1,
+    })
+
+    if (existing.docs[0]) {
+      startupIds[startup.slug] = existing.docs[0].id
+      console.log(`Startup exists: ${startup.name}`)
+    } else {
+      const created = await payload.create({ collection: 'startups', data: startup })
+      startupIds[startup.slug] = created.id
+      console.log(`Created startup: ${startup.name}`)
+    }
+  }
+
+  await payload.update({
+    collection: 'founders',
+    id: founderIds['ananya-sharma'],
+    data: {
+      linkedStartups: [startupIds['payflow-india']],
+    },
+  })
+
+  await payload.update({
+    collection: 'founders',
+    id: founderIds['meera-iyer'],
+    data: {
+      linkedStartups: [startupIds.clinicbridge],
+    },
+  })
+
+  await payload.update({
+    collection: 'founders',
+    id: founderIds['priya-nair'],
+    data: {
+      linkedStartups: [startupIds.learnloop, startupIds.stackpilot],
+    },
+  })
+
   const categoryData = [
     { name: 'Founder Journey', slug: 'founder-journey', description: 'Personal stories from builders.' },
     { name: 'Startup News', slug: 'startup-news', description: 'Ecosystem updates and announcements.' },

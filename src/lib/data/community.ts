@@ -1,10 +1,128 @@
+import type { Founder, Startup } from '@/payload-types'
+
+import {
+  buildFounderWhere,
+  buildStartupWhere,
+  type FounderFilters,
+  type StartupFilters,
+} from '@/lib/community-filters'
 import { getPayloadClient } from '@/lib/payload'
 import { approvedCommunityWhere, indexableCommunityWhere } from '@/lib/queries'
 
-export async function getApprovedFounderBySlug(slug: string) {
+const DEFAULT_LIMIT = 24
+
+async function getIndustryIdBySlug(slug?: string): Promise<number | undefined> {
+  if (!slug) return undefined
+
   const payload = await getPayloadClient()
+  const result = await payload.find({
+    collection: 'industries',
+    where: { slug: { equals: slug } },
+    limit: 1,
+    depth: 0,
+  })
+
+  return result.docs[0]?.id
+}
+
+async function getOrganizationIdBySlug(slug?: string): Promise<number | undefined> {
+  if (!slug) return undefined
+
+  const payload = await getPayloadClient()
+  const result = await payload.find({
+    collection: 'organizations',
+    where: { slug: { equals: slug } },
+    limit: 1,
+    depth: 0,
+  })
+
+  return result.docs[0]?.id
+}
+
+async function resolveFilterIds(filters: FounderFilters | StartupFilters) {
+  const [industryId, organizationId] = await Promise.all([
+    getIndustryIdBySlug(filters.industrySlug),
+    getOrganizationIdBySlug(filters.organizationSlug),
+  ])
+
+  return { industryId, organizationId }
+}
+
+export async function getFounders({
+  filters = {},
+  page = 1,
+  limit = DEFAULT_LIMIT,
+}: {
+  filters?: FounderFilters
+  page?: number
+  limit?: number
+} = {}) {
+  const payload = await getPayloadClient()
+  const resolved = await resolveFilterIds(filters)
 
   return payload.find({
+    collection: 'founders',
+    where: buildFounderWhere(filters, resolved),
+    sort: 'name',
+    page,
+    limit,
+    depth: 1,
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      headline: true,
+      avatar: true,
+      city: true,
+      state: true,
+      country: true,
+      moderationStatus: true,
+      verificationStatus: true,
+    },
+  })
+}
+
+export async function getStartups({
+  filters = {},
+  page = 1,
+  limit = DEFAULT_LIMIT,
+}: {
+  filters?: StartupFilters
+  page?: number
+  limit?: number
+} = {}) {
+  const payload = await getPayloadClient()
+  const resolved = await resolveFilterIds(filters)
+
+  return payload.find({
+    collection: 'startups',
+    where: buildStartupWhere(filters, resolved),
+    sort: 'name',
+    page,
+    limit,
+    depth: 1,
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      tagline: true,
+      logo: true,
+      industry: true,
+      city: true,
+      womenLed: true,
+      isHiring: true,
+      isRaising: true,
+      isLookingForCoFounder: true,
+      moderationStatus: true,
+      verificationStatus: true,
+    },
+  })
+}
+
+export async function getFounderBySlug(slug: string): Promise<Founder | null> {
+  const payload = await getPayloadClient()
+
+  const result = await payload.find({
     collection: 'founders',
     where: {
       and: [approvedCommunityWhere, { slug: { equals: slug } }],
@@ -12,12 +130,14 @@ export async function getApprovedFounderBySlug(slug: string) {
     limit: 1,
     depth: 2,
   })
+
+  return result.docs[0] ?? null
 }
 
-export async function getApprovedStartupBySlug(slug: string) {
+export async function getStartupBySlug(slug: string): Promise<Startup | null> {
   const payload = await getPayloadClient()
 
-  return payload.find({
+  const result = await payload.find({
     collection: 'startups',
     where: {
       and: [approvedCommunityWhere, { slug: { equals: slug } }],
@@ -25,30 +145,53 @@ export async function getApprovedStartupBySlug(slug: string) {
     limit: 1,
     depth: 2,
   })
+
+  return result.docs[0] ?? null
 }
 
-/** Directory / list queries — approved moderation only */
-export async function getApprovedFounders(limit = 48) {
-  const payload = await getPayloadClient()
-
-  return payload.find({
-    collection: 'founders',
-    where: approvedCommunityWhere,
-    sort: 'name',
-    limit,
-    depth: 1,
-  })
-}
-
-export async function getApprovedStartups(limit = 48) {
+export async function getStartupsForFounder(founderId: number) {
   const payload = await getPayloadClient()
 
   return payload.find({
     collection: 'startups',
-    where: approvedCommunityWhere,
+    where: {
+      and: [approvedCommunityWhere, { 'team.founder': { equals: founderId } }],
+    },
     sort: 'name',
-    limit,
+    limit: 100,
     depth: 1,
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      tagline: true,
+      logo: true,
+      team: true,
+      moderationStatus: true,
+      verificationStatus: true,
+    },
+  })
+}
+
+export async function getFilterIndustries() {
+  const payload = await getPayloadClient()
+
+  return payload.find({
+    collection: 'industries',
+    sort: 'name',
+    limit: 200,
+    depth: 0,
+  })
+}
+
+export async function getFilterOrganizations() {
+  const payload = await getPayloadClient()
+
+  return payload.find({
+    collection: 'organizations',
+    sort: 'name',
+    limit: 200,
+    depth: 0,
   })
 }
 
