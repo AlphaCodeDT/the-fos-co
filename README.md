@@ -63,16 +63,19 @@ cp .env.example .env
 
 Fill in:
 
-- `DATABASE_URL` — Supabase Postgres connection string (Session pooler or direct)
+- `DATABASE_URL` — Supabase Postgres: **`:6543` transaction pooler** for runtime (local dev + Vercel); use **`:5432` direct** only when running migrations (see below)
 - `PAYLOAD_SECRET` — long random string
 - `NEXT_PUBLIC_SERVER_URL` — e.g. `http://localhost:3000` (production: your Vercel URL)
 - S3 vars — optional locally (media falls back to disk); required for production media on Supabase/R2
 
 ### 3. Database migrations
 
-**Production uses migrations only** (`push: false`). Apply migrations before running or building:
+**Production uses migrations only** (`push: false`). Migrations require a **session-capable** connection — use Supabase **direct `:5432`**, not the transaction pooler (`:6543`).
+
+**Workflow:** migrate locally → push code → Vercel builds (no migrate on deploy).
 
 ```bash
+# Point DATABASE_URL at :5432 in .env, then:
 npm run payload migrate
 ```
 
@@ -103,15 +106,20 @@ npm run dev
 - Public site: [http://localhost:3000](http://localhost:3000)
 - Payload admin: [http://localhost:3000/admin](http://localhost:3000/admin)
 
-### 6. Production build (Vercel)
+### 6. Production (Vercel)
 
-Set the build command to:
+`vercel.json` sets **build-only** (`npm run build`). Do **not** run `payload migrate` on Vercel — the transaction pooler (`:6543`) cannot run migrations safely.
 
-```bash
-npm run ci
-```
+**Vercel env vars:**
 
-This runs `payload migrate` then `next build`.
+| Variable | Value |
+|----------|--------|
+| `DATABASE_URL` | Transaction pooler, port **6543** |
+| `PAYLOAD_SECRET` | Same secret as local |
+| `NEXT_PUBLIC_SERVER_URL` | Your production URL |
+| S3 vars | Supabase Storage (or R2) credentials |
+
+If the Vercel dashboard has **Build Command** overridden, set it to `npm run build` or turn the override off so `vercel.json` applies.
 
 ## Public visibility rules
 
@@ -133,7 +141,7 @@ Two independent trust layers:
 |---------|---------|
 | `npm run dev` | Next.js dev server |
 | `npm run build` | Production build |
-| `npm run ci` | Migrate + build (use on Vercel) |
+| `npm run ci` | Migrate + build (local/CI only — not Vercel) |
 | `npm run payload` | Payload CLI |
 | `npm run seed` | Seed database |
 | `npm run generate:types` | Regenerate `payload-types.ts` |
