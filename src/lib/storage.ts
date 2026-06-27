@@ -24,6 +24,9 @@ export function createS3StoragePlugin(): Plugin {
         secretAccessKey: secretAccessKey || '',
       },
       region: process.env.S3_REGION || 'auto',
+      // Avoid AWS SDK checksum middleware rejecting SharedArrayBuffer-backed bodies on Vercel.
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+      responseChecksumValidation: 'WHEN_REQUIRED',
       ...(process.env.S3_ENDPOINT
         ? {
             endpoint: process.env.S3_ENDPOINT,

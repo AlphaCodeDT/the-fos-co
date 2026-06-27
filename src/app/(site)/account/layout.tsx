@@ -7,6 +7,9 @@ export const metadata = {
   title: formatPageTitle('Account'),
 }
 
+/** Allow sharp + S3 upload pipeline to finish on Vercel serverless. */
+export const maxDuration = 60
+
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   await requireFounder()
 

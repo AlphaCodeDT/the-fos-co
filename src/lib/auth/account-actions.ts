@@ -1,10 +1,5 @@
 'use server'
 
-import { randomUUID } from 'crypto'
-import fs from 'fs/promises'
-import os from 'os'
-import path from 'path'
-
 import { getCurrentFounder } from '@/lib/auth/founder'
 import { plainTextToLexical } from '@/lib/richtext'
 import { getPayloadClient } from '@/lib/payload'
@@ -187,11 +182,12 @@ function buildStartupData(formData: FormData): Partial<Startup> {
   return data
 }
 
+/** Copy file bytes into a standalone Node Buffer (never SharedArrayBuffer-backed). */
 async function fileToPlainBuffer(file: File): Promise<Buffer> {
-  const ab = await file.arrayBuffer()
-  const copy = new ArrayBuffer(ab.byteLength)
-  new Uint8Array(copy).set(new Uint8Array(ab))
-  return Buffer.from(copy)
+  const bytes = new Uint8Array(await file.arrayBuffer())
+  const data = Buffer.alloc(bytes.byteLength)
+  data.set(bytes)
+  return data
 }
 
 async function uploadFounderMedia({
@@ -206,45 +202,25 @@ async function uploadFounderMedia({
   alt: string
 }): Promise<number> {
   const user = founderAuthUser(founder)
-  const mediaData = {
-    alt: alt || file.name,
-    uploadedBy: founder.id,
-  }
-  const fileMeta = {
-    name: file.name,
-    mimetype: file.type,
-    size: file.size,
-  }
+  const data = await fileToPlainBuffer(file)
 
-  try {
-    const data = await fileToPlainBuffer(file)
-    const media = await payload.create({
-      collection: 'media',
-      data: mediaData,
-      file: { ...fileMeta, data },
-      overrideAccess: false,
-      user,
-    })
-    return media.id
-  } catch {
-    const data = await fileToPlainBuffer(file)
-    const ext = path.extname(file.name) || '.bin'
-    const tmpPath = path.join(os.tmpdir(), `fos-upload-${randomUUID()}${ext}`)
+  const media = await payload.create({
+    collection: 'media',
+    data: {
+      alt: alt || file.name,
+      uploadedBy: founder.id,
+    },
+    file: {
+      data,
+      name: file.name,
+      mimetype: file.type,
+      size: file.size,
+    },
+    overrideAccess: false,
+    user,
+  })
 
-    try {
-      await fs.writeFile(tmpPath, data)
-      const media = await payload.create({
-        collection: 'media',
-        data: mediaData,
-        filePath: tmpPath,
-        overrideAccess: false,
-        user,
-      })
-      return media.id
-    } finally {
-      await fs.unlink(tmpPath).catch(() => undefined)
-    }
-  }
+  return media.id
 }
 
 export async function updateProfileAction(
