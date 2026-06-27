@@ -80,10 +80,6 @@ export const Founders: CollectionConfig = {
         }
 
         if (operation === 'update' && isFounderUser(req.user) && !isEditorUser(req.user)) {
-          delete next.moderationStatus
-          delete next.verificationStatus
-          delete next.verificationSource
-
           if (originalDoc?.moderationStatus === 'approved') {
             next.needsReview = true
           }

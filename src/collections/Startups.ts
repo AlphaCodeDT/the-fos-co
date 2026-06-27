@@ -89,11 +89,6 @@ export const Startups: CollectionConfig = {
         }
 
         if (operation === 'update' && isFounderUser(req.user) && !isEditorUser(req.user)) {
-          delete next.moderationStatus
-          delete next.verificationStatus
-          delete next.owner
-          delete next.claim
-
           if (originalDoc?.moderationStatus === 'approved') {
             next.needsReview = true
           }
