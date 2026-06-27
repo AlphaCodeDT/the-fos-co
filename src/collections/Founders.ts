@@ -8,7 +8,6 @@ import {
 } from '@/access'
 import { isEditorUser, isFounderUser } from '@/access/roles'
 import { slugField } from '@/collections/fields/slugField'
-import { isEmailVerificationRequired } from '@/lib/env'
 import {
   generateForgotPasswordEmailHTML,
   generateForgotPasswordEmailSubject,
@@ -18,19 +17,15 @@ import {
 import { notifySubmissionPending } from '@/lib/email/notify'
 import { ensureUniqueSlug, slugifyName } from '@/lib/slug'
 
-const requireEmailVerification = isEmailVerificationRequired()
-
 export const Founders: CollectionConfig = {
   slug: 'founders',
   auth: {
     maxLoginAttempts: 5,
     lockTime: 600_000,
-    verify: requireEmailVerification
-      ? {
-          generateEmailHTML: ({ token }) => generateVerifyEmailHTML({ token }),
-          generateEmailSubject: () => generateVerifyEmailSubject(),
-        }
-      : false,
+    verify: {
+      generateEmailHTML: ({ token }) => generateVerifyEmailHTML({ token }),
+      generateEmailSubject: () => generateVerifyEmailSubject(),
+    },
     forgotPassword: {
       generateEmailHTML: (args) => generateForgotPasswordEmailHTML({ token: args?.token }),
       generateEmailSubject: () => generateForgotPasswordEmailSubject(),
