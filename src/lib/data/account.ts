@@ -12,7 +12,7 @@ export async function getFounderStartups(founderId: number): Promise<Startup[]> 
     depth: 1,
     limit: 100,
     sort: '-updatedAt',
-    user: { id: founderId, collection: 'founders' } as never,
+    overrideAccess: true,
   })
 
   return result.docs as Startup[]
@@ -29,7 +29,7 @@ export async function getFounderClaims(founderId: number): Promise<Startup[]> {
     depth: 1,
     limit: 100,
     sort: '-updatedAt',
-    user: { id: founderId, collection: 'founders' } as never,
+    overrideAccess: true,
   })
 
   return result.docs as Startup[]
@@ -50,7 +50,7 @@ export async function getStartupForOwner(startupId: number, founderId: number): 
     },
     depth: 1,
     limit: 1,
-    user: { id: founderId, collection: 'founders' } as never,
+    overrideAccess: true,
   })
 
   return (result.docs[0] as Startup | undefined) ?? null
@@ -60,8 +60,8 @@ export async function getTaxonomyOptions() {
   const payload = await getPayloadClient()
 
   const [industries, organizations] = await Promise.all([
-    payload.find({ collection: 'industries', limit: 100, sort: 'name' }),
-    payload.find({ collection: 'organizations', limit: 100, sort: 'name' }),
+    payload.find({ collection: 'industries', limit: 100, sort: 'name', overrideAccess: true }),
+    payload.find({ collection: 'organizations', limit: 100, sort: 'name', overrideAccess: true }),
   ])
 
   return {

@@ -13,6 +13,15 @@ import {
 } from '@/lib/auth/account-actions'
 import { lexicalToPlainText } from '@/lib/richtext'
 import type { Founder, Industry, Organization } from '@/payload-types'
+import { selectClassName } from '@/components/account/startup-form-constants'
+
+const GENDER_OPTIONS = [
+  { label: 'Female', value: 'female' },
+  { label: 'Male', value: 'male' },
+  { label: 'Non-binary', value: 'non-binary' },
+  { label: 'Prefer not to say', value: 'prefer-not-to-say' },
+  { label: 'Other', value: 'other' },
+] as const
 
 const initialState: AccountActionState = {}
 
@@ -94,6 +103,22 @@ export function ProfileForm({
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="avatar">Avatar</Label>
           <Input id="avatar" type="file" accept="image/*" onChange={handleAvatarChange} disabled={uploading} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="gender">Gender</Label>
+          <select
+            id="gender"
+            name="gender"
+            className={selectClassName}
+            defaultValue={founder.gender || ''}
+          >
+            <option value="">Prefer not to say</option>
+            {GENDER_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="city">City</Label>

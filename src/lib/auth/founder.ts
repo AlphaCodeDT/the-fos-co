@@ -17,6 +17,7 @@ export async function getCurrentFounder(): Promise<Founder | null> {
       collection: 'founders',
       id: user.id,
       depth: 1,
+      overrideAccess: true,
     })) as Founder
   } catch {
     return null

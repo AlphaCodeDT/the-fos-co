@@ -36,7 +36,7 @@ export default async function EditStartupPage({ params }: PageProps) {
     notFound()
   }
 
-  const { industries } = await getTaxonomyOptions()
+  const { industries, organizations } = await getTaxonomyOptions()
 
   return (
     <AccountShell
@@ -44,7 +44,12 @@ export default async function EditStartupPage({ params }: PageProps) {
       title={`Edit ${startup.name}`}
       description="Updates to approved startups stay live while editors re-review your changes."
     >
-      <EditStartupForm startup={startup} industries={industries} />
+      <EditStartupForm
+        startup={startup}
+        industries={industries}
+        organizations={organizations}
+        currentFounderId={founder.id}
+      />
     </AccountShell>
   )
 }

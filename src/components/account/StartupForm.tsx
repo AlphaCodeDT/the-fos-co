@@ -4,6 +4,7 @@ import { useActionState, useState } from 'react'
 import Link from 'next/link'
 
 import { AccountShell, FormMessage } from '@/components/account/AccountShell'
+import { StartupFormFields } from '@/components/account/StartupFormFields'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,11 +13,19 @@ import {
   uploadMediaAction,
   type AccountActionState,
 } from '@/lib/auth/account-actions'
-import type { Industry } from '@/payload-types'
+import type { Industry, Organization } from '@/payload-types'
 
 const initialState: AccountActionState = {}
 
-export function NewStartupForm({ industries }: { industries: Industry[] }) {
+export function NewStartupForm({
+  industries,
+  organizations,
+  currentFounderId,
+}: {
+  industries: Industry[]
+  organizations: Organization[]
+  currentFounderId: number
+}) {
   const [state, action, pending] = useActionState(createStartupAction, initialState)
   const [logoId, setLogoId] = useState<number | undefined>()
   const [uploadError, setUploadError] = useState<string>()
@@ -50,71 +59,16 @@ export function NewStartupForm({ industries }: { industries: Industry[] }) {
       {uploadError ? <FormMessage error={uploadError} /> : null}
       {logoId ? <input type="hidden" name="logoId" value={logoId} /> : null}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="name">Startup name</Label>
-          <Input id="name" name="name" required />
-        </div>
-        <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="tagline">Tagline</Label>
-          <Input id="tagline" name="tagline" />
-        </div>
-        <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="description">Description</Label>
-          <textarea
-            id="description"
-            name="description"
-            rows={5}
-            className="flex w-full rounded-md border border-brand-white/20 bg-brand-black px-3 py-2 text-sm text-brand-white placeholder:text-brand-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
-          />
-        </div>
-        <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="logo">Logo</Label>
-          <Input id="logo" type="file" accept="image/*" onChange={handleLogoChange} disabled={uploading} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="industry">Industry</Label>
-          <select
-            id="industry"
-            name="industry"
-            className="flex h-10 w-full rounded-md border border-brand-white/20 bg-brand-black px-3 text-sm text-brand-white"
-            defaultValue=""
-          >
-            <option value="">Select industry</option>
-            {industries.map((industry) => (
-              <option key={industry.id} value={industry.id}>
-                {industry.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="website">Website</Label>
-          <Input id="website" name="website" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="city">City</Label>
-          <Input id="city" name="city" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="country">Country</Label>
-          <Input id="country" name="country" />
-        </div>
+      <div className="space-y-2 sm:col-span-2">
+        <Label htmlFor="logo">Logo</Label>
+        <Input id="logo" type="file" accept="image/*" onChange={handleLogoChange} disabled={uploading} />
       </div>
 
-      <div className="flex flex-wrap gap-4">
-        {[
-          ['isHiring', 'Hiring'],
-          ['isRaising', 'Raising'],
-          ['isLookingForCoFounder', 'Looking for co-founder'],
-          ['womenLed', 'Women-led'],
-        ].map(([name, label]) => (
-          <label key={name} className="flex items-center gap-2 text-sm text-brand-white/80">
-            <input type="checkbox" name={name} className="accent-brand-yellow" />
-            {label}
-          </label>
-        ))}
-      </div>
+      <StartupFormFields
+        industries={industries}
+        organizations={organizations}
+        currentFounderId={currentFounderId}
+      />
 
       <div className="flex gap-3">
         <Button type="submit" disabled={pending || uploading}>

@@ -1,5 +1,6 @@
 import { AccountShell } from '@/components/account/AccountShell'
 import { NewStartupForm } from '@/components/account/StartupForm'
+import { requireFounder } from '@/lib/auth/founder'
 import { getTaxonomyOptions } from '@/lib/data/account'
 import { formatPageTitle } from '@/lib/site'
 
@@ -8,7 +9,8 @@ export const metadata = {
 }
 
 export default async function NewStartupPage() {
-  const { industries } = await getTaxonomyOptions()
+  const founder = await requireFounder()
+  const { industries, organizations } = await getTaxonomyOptions()
 
   return (
     <AccountShell
@@ -16,7 +18,11 @@ export default async function NewStartupPage() {
       title="Create startup"
       description="New startups are pending until an editor approves them."
     >
-      <NewStartupForm industries={industries} />
+      <NewStartupForm
+        industries={industries}
+        organizations={organizations}
+        currentFounderId={founder.id}
+      />
     </AccountShell>
   )
 }
