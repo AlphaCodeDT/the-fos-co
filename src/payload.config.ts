@@ -3,6 +3,7 @@ import 'dotenv/config'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import { resendAdapter } from '@payloadcms/email-resend'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
@@ -12,6 +13,7 @@ import { collections } from '@/collections'
 import { Users } from '@/collections/Users'
 import { createPgDriver, createPostgresPoolConfig } from '@/lib/db-pool'
 import { createS3StoragePlugin } from '@/lib/storage'
+import { siteConfig } from '@/lib/site'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -26,6 +28,11 @@ export default buildConfig({
   },
   collections,
   editor: lexicalEditor(),
+  email: resendAdapter({
+    defaultFromAddress: process.env.EMAIL_FROM || 'hello@example.com',
+    defaultFromName: siteConfig.name,
+    apiKey: process.env.RESEND_API_KEY || '',
+  }),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

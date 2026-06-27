@@ -187,6 +187,7 @@ export interface User {
 export interface Media {
   id: number;
   alt: string;
+  uploadedBy?: (number | null) | Founder;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -226,6 +227,8 @@ export interface Media {
   };
 }
 /**
+ * Filter by moderationStatus = pending or needsReview = true to work the moderation queue.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "founders".
  */
@@ -265,7 +268,7 @@ export interface Founder {
    * Denormalized for profile rendering. Startups.team is authoritative.
    */
   linkedStartups?: (number | Startup)[] | null;
-  owner?: (number | null) | Founder;
+  needsReview?: boolean | null;
   moderationStatus: 'draft' | 'pending' | 'approved';
   verificationStatus: 'pending' | 'verified' | 'rejected';
   verificationSource?: {
@@ -319,6 +322,8 @@ export interface Organization {
   createdAt: string;
 }
 /**
+ * Filter by moderationStatus = pending, needsReview = true, or claim.claimStatus = pending.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "startups".
  */
@@ -365,11 +370,13 @@ export interface Startup {
         id?: string | null;
       }[]
     | null;
+  owner?: (number | null) | Founder;
   claim?: {
     claimedBy?: (number | null) | Founder;
     claimedAt?: string | null;
     claimStatus?: ('unclaimed' | 'pending' | 'claimed') | null;
   };
+  needsReview?: boolean | null;
   moderationStatus: 'draft' | 'pending' | 'approved';
   verificationStatus: 'pending' | 'verified' | 'rejected';
   opportunities?:
@@ -607,7 +614,7 @@ export interface FoundersSelect<T extends boolean = true> {
   lookingForCoFounder?: T;
   openToOpportunities?: T;
   linkedStartups?: T;
-  owner?: T;
+  needsReview?: T;
   moderationStatus?: T;
   verificationStatus?: T;
   verificationSource?:
@@ -639,6 +646,7 @@ export interface FoundersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  uploadedBy?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -789,6 +797,7 @@ export interface StartupsSelect<T extends boolean = true> {
         isPrimary?: T;
         id?: T;
       };
+  owner?: T;
   claim?:
     | T
     | {
@@ -796,6 +805,7 @@ export interface StartupsSelect<T extends boolean = true> {
         claimedAt?: T;
         claimStatus?: T;
       };
+  needsReview?: T;
   moderationStatus?: T;
   verificationStatus?: T;
   opportunities?:

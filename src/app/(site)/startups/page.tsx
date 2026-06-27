@@ -5,7 +5,8 @@ import { Suspense } from 'react'
 import { CommunityFilterBar } from '@/components/community/CommunityFilterBar'
 import { DirectoryPagination } from '@/components/community/DirectoryPagination'
 import { StartupCard } from '@/components/community/StartupCard'
-import { SiteFooter, SiteHeader } from '@/components/layout/site-chrome'
+import { SiteFooter } from '@/components/layout/site-chrome'
+import { SiteHeader } from '@/components/layout/SiteHeader'
 import { parseStartupSearchParams } from '@/lib/community-filters'
 import {
   getFilterIndustries,

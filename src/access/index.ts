@@ -16,6 +16,9 @@ export const fieldAdminOnly: FieldAccess = ({ req: { user } }) => isAdminUser(us
 
 export const isFounder: Access = ({ req: { user } }) => isFounderUser(user)
 
+export const isEditorOrFounder: Access = ({ req: { user } }) =>
+  isEditorUser(user) || isFounderUser(user)
+
 const approvedCommunityWhere: Where = {
   moderationStatus: {
     equals: 'approved',
@@ -28,8 +31,50 @@ export const publicApproved: Access = ({ req: { user } }) => {
   return approvedCommunityWhere
 }
 
-/** Founders may edit only records they own; editors/admins may edit all */
-export const isOwnerOrEditor: Access = ({ req: { user } }) => {
+/** Founders may read approved profiles publicly, plus their own record at any moderation state */
+export const founderRead: Access = ({ req: { user } }) => {
+  if (isEditorUser(user)) return true
+
+  if (isFounderUser(user) && user?.id) {
+    return {
+      or: [approvedCommunityWhere, { id: { equals: user.id } }],
+    }
+  }
+
+  return approvedCommunityWhere
+}
+
+/** Startups: public approved, or readable by owner / claimant */
+export const startupRead: Access = ({ req: { user } }) => {
+  if (isEditorUser(user)) return true
+
+  if (isFounderUser(user) && user?.id) {
+    return {
+      or: [
+        approvedCommunityWhere,
+        { owner: { equals: user.id } },
+        { 'claim.claimedBy': { equals: user.id } },
+      ],
+    }
+  }
+
+  return approvedCommunityWhere
+}
+
+/** Founders may edit only their own auth/profile document */
+export const isFounderSelfOrEditor: Access = ({ req: { user } }) => {
+  if (isEditorUser(user)) return true
+  if (!isFounderUser(user) || !user?.id) return false
+
+  return {
+    id: {
+      equals: user.id,
+    },
+  }
+}
+
+/** Founders may edit only startups they own */
+export const isStartupOwnerOrEditor: Access = ({ req: { user } }) => {
   if (isEditorUser(user)) return true
   if (!isFounderUser(user) || !user?.id) return false
 
@@ -39,6 +84,21 @@ export const isOwnerOrEditor: Access = ({ req: { user } }) => {
     },
   }
 }
+
+/** Media: founders may modify only files they uploaded */
+export const isMediaUploader: Access = ({ req: { user } }) => {
+  if (isEditorUser(user)) return true
+  if (!isFounderUser(user) || !user?.id) return false
+
+  return {
+    uploadedBy: {
+      equals: user.id,
+    },
+  }
+}
+
+/** @deprecated Use isFounderSelfOrEditor — kept for reference during migration */
+export const isOwnerOrEditor: Access = isFounderSelfOrEditor
 
 const publishedStoriesWhere: Where = {
   _status: {

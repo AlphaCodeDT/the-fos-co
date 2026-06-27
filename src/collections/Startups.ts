@@ -1,7 +1,29 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAdminOrEditor, publicApproved } from '@/access'
+import {
+  fieldAdminOrEditor,
+  isAdminOrEditor,
+  isFounder,
+  isStartupOwnerOrEditor,
+  startupRead,
+} from '@/access'
+import { isEditorUser, isFounderUser } from '@/access/roles'
 import { slugField } from '@/collections/fields/slugField'
+import {
+  notifyClaimApproved,
+  notifyClaimRejected,
+  notifySubmissionPending,
+} from '@/lib/email/notify'
+import { ensureUniqueSlug, slugifyName } from '@/lib/slug'
+import type { Founder, Startup } from '@/payload-types'
+
+function getRelationshipId(value: unknown): number | null {
+  if (typeof value === 'number') return value
+  if (value && typeof value === 'object' && 'id' in value && typeof value.id === 'number') {
+    return value.id
+  }
+  return null
+}
 
 export const Startups: CollectionConfig = {
   slug: 'startups',
@@ -11,15 +33,19 @@ export const Startups: CollectionConfig = {
       'name',
       'stage',
       'city',
+      'owner',
       'moderationStatus',
       'verificationStatus',
+      'needsReview',
       'claim.claimStatus',
     ],
+    description:
+      'Filter by moderationStatus = pending, needsReview = true, or claim.claimStatus = pending.',
   },
   access: {
-    read: publicApproved,
-    create: isAdminOrEditor,
-    update: isAdminOrEditor,
+    read: startupRead,
+    create: isFounder,
+    update: isStartupOwnerOrEditor,
     delete: isAdminOrEditor,
   },
   indexes: [
@@ -32,8 +58,127 @@ export const Startups: CollectionConfig = {
     { fields: ['womenLed'] },
     { fields: ['moderationStatus'] },
     { fields: ['verificationStatus'] },
+    { fields: ['needsReview'] },
+    { fields: ['owner'] },
     { fields: ['claim.claimStatus'] },
   ],
+  hooks: {
+    beforeChange: [
+      async ({ data, operation, originalDoc, req }) => {
+        const next = { ...data }
+
+        if (operation === 'create' && isFounderUser(req.user) && !isEditorUser(req.user) && req.user?.id) {
+          next.owner = req.user.id
+          next.moderationStatus = 'pending'
+          next.claim = {
+            ...(typeof next.claim === 'object' ? next.claim : {}),
+            claimStatus: 'claimed',
+          }
+
+          const name = typeof next.name === 'string' ? next.name : ''
+          const baseSlug =
+            typeof next.slug === 'string' && next.slug.trim().length > 0
+              ? next.slug
+              : slugifyName(name)
+
+          next.slug = await ensureUniqueSlug({
+            payload: req.payload,
+            collection: 'startups',
+            baseSlug,
+          })
+        }
+
+        if (operation === 'update' && isFounderUser(req.user) && !isEditorUser(req.user)) {
+          delete next.moderationStatus
+          delete next.verificationStatus
+          delete next.owner
+          delete next.claim
+
+          if (originalDoc?.moderationStatus === 'approved') {
+            next.needsReview = true
+          }
+        }
+
+        if (operation === 'update' && isEditorUser(req.user)) {
+          const previousStatus = originalDoc?.claim?.claimStatus
+          const nextStatus =
+            typeof next.claim === 'object' && next.claim?.claimStatus
+              ? next.claim.claimStatus
+              : previousStatus
+
+          if (previousStatus === 'pending' && nextStatus === 'claimed') {
+            const claimedBy =
+              getRelationshipId(next.claim?.claimedBy) ??
+              getRelationshipId(originalDoc?.claim?.claimedBy)
+
+            if (claimedBy) {
+              next.owner = claimedBy
+            }
+          }
+
+          if (previousStatus === 'pending' && nextStatus === 'unclaimed') {
+            next.claim = {
+              ...(typeof next.claim === 'object' ? next.claim : {}),
+              claimStatus: 'unclaimed',
+              claimedBy: null,
+              claimedAt: null,
+            }
+          }
+        }
+
+        return next
+      },
+    ],
+    afterChange: [
+      async ({ doc, previousDoc, operation, req }) => {
+        if (operation === 'create' && doc.moderationStatus === 'pending') {
+          try {
+            await notifySubmissionPending({ type: 'startup', name: doc.name })
+          } catch (error) {
+            req.payload.logger.error({ err: error, msg: 'Failed to notify editors of new startup' })
+          }
+        }
+
+        if (operation !== 'update') return
+
+        const prevStatus = previousDoc?.claim?.claimStatus
+        const nextStatus = doc.claim?.claimStatus
+
+        if (prevStatus === nextStatus) return
+
+        const claimedById = getRelationshipId(doc.claim?.claimedBy)
+        if (!claimedById) return
+
+        let founder: Founder | null = null
+
+        try {
+          founder = (await req.payload.findByID({
+            collection: 'founders',
+            id: claimedById,
+            overrideAccess: true,
+          })) as Founder
+        } catch {
+          return
+        }
+
+        if (prevStatus === 'pending' && nextStatus === 'claimed') {
+          try {
+            await notifyClaimApproved(doc as Startup, founder)
+          } catch (error) {
+            req.payload.logger.error({ err: error, msg: 'Failed to notify founder of claim approval' })
+          }
+        }
+
+        if (prevStatus === 'pending' && nextStatus === 'unclaimed') {
+          try {
+            await notifyClaimRejected(doc as Startup, founder)
+          } catch (error) {
+            req.payload.logger.error({ err: error, msg: 'Failed to notify founder of claim rejection' })
+          }
+        }
+      },
+    ],
+  },
   fields: [
     {
       name: 'name',
@@ -163,8 +308,23 @@ export const Startups: CollectionConfig = {
       ],
     },
     {
+      name: 'owner',
+      type: 'relationship',
+      relationTo: 'founders',
+      index: true,
+      admin: {
+        position: 'sidebar',
+      },
+      access: {
+        update: fieldAdminOrEditor,
+      },
+    },
+    {
       name: 'claim',
       type: 'group',
+      access: {
+        update: fieldAdminOrEditor,
+      },
       fields: [
         {
           name: 'claimedBy',
@@ -189,6 +349,18 @@ export const Startups: CollectionConfig = {
       ],
     },
     {
+      name: 'needsReview',
+      type: 'checkbox',
+      defaultValue: false,
+      index: true,
+      admin: {
+        position: 'sidebar',
+      },
+      access: {
+        update: fieldAdminOrEditor,
+      },
+    },
+    {
       name: 'moderationStatus',
       type: 'select',
       required: true,
@@ -199,6 +371,9 @@ export const Startups: CollectionConfig = {
         { label: 'Pending', value: 'pending' },
         { label: 'Approved', value: 'approved' },
       ],
+      access: {
+        update: fieldAdminOrEditor,
+      },
     },
     {
       name: 'verificationStatus',
@@ -211,6 +386,9 @@ export const Startups: CollectionConfig = {
         { label: 'Verified', value: 'verified' },
         { label: 'Rejected', value: 'rejected' },
       ],
+      access: {
+        update: fieldAdminOrEditor,
+      },
     },
     {
       name: 'opportunities',

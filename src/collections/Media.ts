@@ -1,14 +1,28 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, isAdminOrEditor } from '@/access'
+import { isEditorOrFounder, isMediaUploader } from '@/access'
+import { isFounderUser } from '@/access/roles'
 
 export const Media: CollectionConfig = {
   slug: 'media',
   access: {
-    read: anyone,
-    create: isAdminOrEditor,
-    update: isAdminOrEditor,
-    delete: isAdminOrEditor,
+    read: () => true,
+    create: isEditorOrFounder,
+    update: isMediaUploader,
+    delete: isMediaUploader,
+  },
+  hooks: {
+    beforeChange: [
+      ({ data, operation, req }) => {
+        if (operation === 'create' && isFounderUser(req.user) && req.user?.id) {
+          return {
+            ...data,
+            uploadedBy: req.user.id,
+          }
+        }
+        return data
+      },
+    ],
   },
   upload: {
     staticDir: 'media',
@@ -40,6 +54,15 @@ export const Media: CollectionConfig = {
       name: 'alt',
       type: 'text',
       required: true,
+    },
+    {
+      name: 'uploadedBy',
+      type: 'relationship',
+      relationTo: 'founders',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
     },
   ],
 }

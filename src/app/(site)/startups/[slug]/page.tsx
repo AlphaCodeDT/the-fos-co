@@ -4,11 +4,14 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { ChipList } from '@/components/community/ChipList'
+import { ClaimStartupButton } from '@/components/community/ClaimStartupButton'
 import { CommunityProfileContent } from '@/components/community/CommunityProfileContent'
 import { OpportunityBadges } from '@/components/community/OpportunityBadges'
 import { TrustBadge } from '@/components/community/TrustBadge'
 import { WomenLedBadge } from '@/components/community/WomenLedBadge'
-import { SiteFooter, SiteHeader } from '@/components/layout/site-chrome'
+import { SiteFooter } from '@/components/layout/site-chrome'
+import { SiteHeader } from '@/components/layout/SiteHeader'
+import { getCurrentFounder } from '@/lib/auth/founder'
 import { formatTeamRole } from '@/lib/community'
 import { getStartupBySlug } from '@/lib/data/community'
 import { lexicalToPlainText } from '@/lib/richtext'
@@ -48,9 +51,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function StartupProfilePage({ params }: PageProps) {
   const { slug } = await params
-  const startup = await getStartupBySlug(slug)
+  const [startup, founder] = await Promise.all([getStartupBySlug(slug), getCurrentFounder()])
 
   if (!startup) notFound()
+
+  const claimantId =
+    typeof startup.claim?.claimedBy === 'object'
+      ? startup.claim.claimedBy?.id
+      : startup.claim?.claimedBy
 
   const logo =
     startup.logo && typeof startup.logo === 'object'
@@ -168,6 +176,16 @@ export default async function StartupProfilePage({ params }: PageProps) {
             </ul>
           </div>
         ) : null}
+
+        <ClaimStartupButton
+          startupId={startup.id}
+          startupName={startup.name}
+          startupSlug={startup.slug}
+          isAuthenticated={Boolean(founder)}
+          claimStatus={startup.claim?.claimStatus}
+          claimantId={claimantId}
+          currentFounderId={founder?.id}
+        />
       </main>
       <SiteFooter />
     </>

@@ -251,7 +251,13 @@ async function seed() {
       founderIds[founder.slug] = existing.docs[0].id
       console.log(`Founder exists: ${founder.name}`)
     } else {
-      const created = await payload.create({ collection: 'founders', data: founder })
+      const created = await payload.create({
+        collection: 'founders',
+        data: {
+          ...founder,
+          _verified: true,
+        },
+      })
       founderIds[founder.slug] = created.id
       console.log(`Created founder: ${founder.name}`)
     }
@@ -348,6 +354,27 @@ async function seed() {
         { founder: founderIds['rahul-menon'], role: 'founder' as const, isPrimary: true },
       ],
       description: richText(['StackPilot automates CI/CD workflows for early-stage SaaS teams.']),
+    },
+    {
+      name: 'NovaForge',
+      slug: 'novaforge',
+      tagline: 'Unclaimed startup for claim-flow testing',
+      industry: industryIds.saas,
+      organizations: [organizationIds.nsrcel],
+      city: 'Bengaluru',
+      country: 'India',
+      womenLed: false,
+      isHiring: true,
+      isRaising: false,
+      isLookingForCoFounder: true,
+      moderationStatus: 'approved' as const,
+      verificationStatus: 'verified' as const,
+      claim: {
+        claimStatus: 'unclaimed' as const,
+      },
+      description: richText([
+        'NovaForge is a seeded startup left unclaimed so founders can test the claim flow.',
+      ]),
     },
   ]
 

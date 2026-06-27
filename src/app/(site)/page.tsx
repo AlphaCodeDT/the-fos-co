@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import { SiteFooter, SiteHeader } from '@/components/layout/site-chrome'
+import { SiteFooter } from '@/components/layout/site-chrome'
+import { SiteHeader } from '@/components/layout/SiteHeader'
 import { NewsletterSignup } from '@/components/newsletter/NewsletterSignup'
 import { StoryCard } from '@/components/stories/StoryCard'
 import { getPublishedStories } from '@/lib/data/stories'
