@@ -3,8 +3,8 @@ import Link from 'next/link'
 
 import { OpportunityBadges } from '@/components/community/OpportunityBadges'
 import { TrustBadge } from '@/components/community/TrustBadge'
+import { resolveStartupLogoUrl } from '@/lib/media-image'
 import type { Industry, Media, Startup } from '@/payload-types'
-import { resolveMediaUrl } from '@/lib/url'
 
 type StartupCardProps = {
   startup: Pick<
@@ -18,6 +18,7 @@ type StartupCardProps = {
     | 'isLookingForCoFounder'
     | 'moderationStatus'
     | 'verificationStatus'
+    | 'logoUrl'
   > & {
     logo?: Media | number | null
     industry?: Industry | number | null
@@ -25,10 +26,7 @@ type StartupCardProps = {
 }
 
 export function StartupCard({ startup }: StartupCardProps) {
-  const logo =
-    startup.logo && typeof startup.logo === 'object'
-      ? resolveMediaUrl(startup.logo.sizes?.thumb?.url || startup.logo.url)
-      : null
+  const logo = resolveStartupLogoUrl(startup)
 
   const industryName =
     startup.industry && typeof startup.industry === 'object' ? startup.industry.name : null

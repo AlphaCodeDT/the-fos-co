@@ -187,6 +187,13 @@ export const Startups: CollectionConfig = {
       relationTo: 'media',
     },
     {
+      name: 'logoUrl',
+      type: 'text',
+      admin: {
+        description: 'Public URL from Supabase Storage (set by founder account uploads).',
+      },
+    },
+    {
       name: 'tagline',
       type: 'text',
     },

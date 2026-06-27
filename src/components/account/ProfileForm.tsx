@@ -2,15 +2,14 @@
 
 import { useActionState, useState } from 'react'
 
-import { AccountShell, FormMessage } from '@/components/account/AccountShell'
+import { FormMessage } from '@/components/account/AccountShell'
+import { ImageUploadField } from '@/components/account/ImageUploadField'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  updateProfileAction,
-  uploadMediaAction,
-  type AccountActionState,
-} from '@/lib/auth/account-actions'
+import { updateProfileAction, type AccountActionState } from '@/lib/auth/account-actions'
+import { uploadImageDirect } from '@/lib/auth/direct-upload'
+import { resolveFounderAvatarUrl } from '@/lib/media-image'
 import { lexicalToPlainText } from '@/lib/richtext'
 import type { Founder, Industry, Organization } from '@/payload-types'
 import { selectClassName } from '@/components/account/startup-form-constants'
@@ -34,10 +33,8 @@ export function ProfileForm({
   industries: Industry[]
   organizations: Organization[]
 }) {
-  const [state, action, pending] = useActionState(updateProfileAction, initialState)
-  const [avatarId, setAvatarId] = useState<number | undefined>(
-    typeof founder.avatar === 'object' && founder.avatar ? founder.avatar.id : undefined,
-  )
+  const [state, formAction, pending] = useActionState(updateProfileAction, initialState)
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
   const [uploadError, setUploadError] = useState<string>()
   const [uploading, setUploading] = useState(false)
 
@@ -53,33 +50,45 @@ export function ProfileForm({
       .filter((id): id is number => typeof id === 'number'),
   )
 
-  async function handleAvatarChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    setUploading(true)
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
     setUploadError(undefined)
 
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('alt', `${founder.name} avatar`)
+    const form = event.currentTarget
+    const formData = new FormData(form)
 
-    const result = await uploadMediaAction(formData)
+    if (pendingFile) {
+      setUploading(true)
+      const result = await uploadImageDirect(pendingFile, 'avatar')
+      setUploading(false)
 
-    if (result.error) {
-      setUploadError(result.error)
-    } else if (result.id) {
-      setAvatarId(result.id)
+      if (result.error) {
+        setUploadError(result.error)
+        return
+      }
+
+      if (result.publicUrl) {
+        formData.set('avatarUrl', result.publicUrl)
+      }
     }
 
-    setUploading(false)
+    formAction(formData)
   }
 
+  const initialAvatarUrl = resolveFounderAvatarUrl(founder)
+
   return (
-    <form action={action} className="space-y-6 rounded-2xl border border-brand-white/10 bg-brand-black/60 p-6">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6 rounded-2xl border border-brand-white/10 bg-brand-black/60 p-6"
+    >
       <FormMessage {...state} />
       {uploadError ? <FormMessage error={uploadError} /> : null}
-      {avatarId ? <input type="hidden" name="avatarId" value={avatarId} /> : null}
+      {uploading ? (
+        <p className="text-sm text-brand-white/70" role="status">
+          Uploading image…
+        </p>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2 sm:col-span-2">
@@ -100,9 +109,13 @@ export function ProfileForm({
             className="flex w-full rounded-md border border-brand-white/20 bg-brand-black px-3 py-2 text-sm text-brand-white placeholder:text-brand-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-yellow"
           />
         </div>
-        <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="avatar">Avatar</Label>
-          <Input id="avatar" type="file" accept="image/*" onChange={handleAvatarChange} disabled={uploading} />
+        <div className="sm:col-span-2">
+          <ImageUploadField
+            id="avatar"
+            label="Avatar"
+            initialUrl={initialAvatarUrl}
+            onFileSelect={setPendingFile}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="gender">Gender</Label>
@@ -204,7 +217,7 @@ export function ProfileForm({
       </div>
 
       <Button type="submit" disabled={pending || uploading}>
-        {pending ? 'Saving…' : 'Save profile'}
+        {uploading ? 'Uploading…' : pending ? 'Saving…' : 'Save profile'}
       </Button>
     </form>
   )

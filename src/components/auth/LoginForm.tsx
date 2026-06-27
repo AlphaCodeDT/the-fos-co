@@ -11,6 +11,7 @@ import {
   resendVerificationAction,
   type AuthActionState,
 } from '@/lib/auth/actions'
+import { LoginSubmitButton } from '@/components/auth/LoginSubmitButton'
 
 const initialState: AuthActionState = {}
 
@@ -39,7 +40,7 @@ export function LoginForm({
   redirect?: string
   defaultEmail?: string
 }) {
-  const [state, action, pending] = useActionState(loginAction, initialState)
+  const [state, action] = useActionState(loginAction, initialState)
 
   return (
     <AuthCard
@@ -64,9 +65,7 @@ export function LoginForm({
           <Label htmlFor="password">Password</Label>
           <Input id="password" name="password" type="password" autoComplete="current-password" required />
         </div>
-        <Button type="submit" className="w-full" disabled={pending}>
-          {pending ? 'Signing in…' : 'Sign in'}
-        </Button>
+        <LoginSubmitButton />
       </form>
       {state.error?.toLowerCase().includes('verify') ? <ResendVerification /> : null}
       <AuthFooterLink href="/forgot-password">Forgot your password?</AuthFooterLink>

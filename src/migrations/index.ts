@@ -3,6 +3,7 @@ import * as migration_20260626_173027_community_richtext_indexes from './2026062
 import * as migration_20260627_000713_phase3_founder_accounts from './20260627_000713_phase3_founder_accounts';
 import * as migration_20260627_032301 from './20260627_032301';
 import * as migration_20260627_052400_founder_auth_verify_columns from './20260627_052400_founder_auth_verify_columns';
+import * as migration_20260627_120000_founder_startup_image_urls from './20260627_120000_founder_startup_image_urls';
 
 export const migrations = [
   {
@@ -29,5 +30,10 @@ export const migrations = [
     up: migration_20260627_052400_founder_auth_verify_columns.up,
     down: migration_20260627_052400_founder_auth_verify_columns.down,
     name: '20260627_052400_founder_auth_verify_columns',
+  },
+  {
+    up: migration_20260627_120000_founder_startup_image_urls.up,
+    down: migration_20260627_120000_founder_startup_image_urls.down,
+    name: '20260627_120000_founder_startup_image_urls',
   },
 ];

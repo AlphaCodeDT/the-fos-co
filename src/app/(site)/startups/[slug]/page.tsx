@@ -17,7 +17,7 @@ import { getStartupBySlug } from '@/lib/data/community'
 import { lexicalToPlainText } from '@/lib/richtext'
 import { buildCommunityProfileMetadata, buildStartupOrganizationJsonLd } from '@/lib/seo'
 import { isIndexable } from '@/lib/trust'
-import { resolveMediaUrl } from '@/lib/url'
+import { resolveStartupLogoUrl } from '@/lib/media-image'
 
 export const dynamic = 'force-dynamic'
 
@@ -60,10 +60,7 @@ export default async function StartupProfilePage({ params }: PageProps) {
       ? startup.claim.claimedBy?.id
       : startup.claim?.claimedBy
 
-  const logo =
-    startup.logo && typeof startup.logo === 'object'
-      ? resolveMediaUrl(startup.logo.sizes?.thumb?.url || startup.logo.url)
-      : null
+  const logo = resolveStartupLogoUrl(startup)
 
   const team = [...(startup.team || [])].sort((a, b) => {
     if (a.isPrimary && !b.isPrimary) return -1

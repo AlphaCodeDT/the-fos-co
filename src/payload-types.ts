@@ -253,6 +253,10 @@ export interface Founder {
     [k: string]: unknown;
   } | null;
   avatar?: (number | null) | Media;
+  /**
+   * Public URL from Supabase Storage (set by founder account uploads).
+   */
+  avatarUrl?: string | null;
   gender?: ('female' | 'male' | 'non-binary' | 'prefer-not-to-say' | 'other') | null;
   city?: string | null;
   state?: string | null;
@@ -334,6 +338,10 @@ export interface Startup {
   name: string;
   slug: string;
   logo?: (number | null) | Media;
+  /**
+   * Public URL from Supabase Storage (set by founder account uploads).
+   */
+  logoUrl?: string | null;
   tagline?: string | null;
   description?: {
     root: {
@@ -604,6 +612,7 @@ export interface FoundersSelect<T extends boolean = true> {
   headline?: T;
   bio?: T;
   avatar?: T;
+  avatarUrl?: T;
   gender?: T;
   city?: T;
   state?: T;
@@ -777,6 +786,7 @@ export interface StartupsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   logo?: T;
+  logoUrl?: T;
   tagline?: T;
   description?: T;
   website?: T;

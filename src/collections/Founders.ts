@@ -121,6 +121,13 @@ export const Founders: CollectionConfig = {
       relationTo: 'media',
     },
     {
+      name: 'avatarUrl',
+      type: 'text',
+      admin: {
+        description: 'Public URL from Supabase Storage (set by founder account uploads).',
+      },
+    },
+    {
       name: 'gender',
       type: 'select',
       options: [

@@ -12,7 +12,7 @@ import { formatTeamRole } from '@/lib/community'
 import { getFounderBySlug, getStartupsForFounder } from '@/lib/data/community'
 import { buildCommunityProfileMetadata, buildFounderPersonJsonLd } from '@/lib/seo'
 import { isIndexable } from '@/lib/trust'
-import { resolveMediaUrl } from '@/lib/url'
+import { resolveFounderAvatarUrl, resolveStartupLogoUrl } from '@/lib/media-image'
 import { lexicalToPlainText } from '@/lib/richtext'
 
 export const dynamic = 'force-dynamic'
@@ -54,10 +54,7 @@ export default async function FounderProfilePage({ params }: PageProps) {
   const startupsResult = await getStartupsForFounder(founder.id)
   const linkedStartups = startupsResult.docs
 
-  const avatar =
-    founder.avatar && typeof founder.avatar === 'object'
-      ? resolveMediaUrl(founder.avatar.sizes?.thumb?.url || founder.avatar.url)
-      : null
+  const avatar = resolveFounderAvatarUrl(founder)
 
   const socialLinks = [
     { label: 'LinkedIn', href: founder.linkedIn },
@@ -148,10 +145,7 @@ export default async function FounderProfilePage({ params }: PageProps) {
                       ? entry.founder.id === founder.id
                       : entry.founder === founder.id),
                 )
-                const logo =
-                  startup.logo && typeof startup.logo === 'object'
-                    ? resolveMediaUrl(startup.logo.sizes?.thumb?.url || startup.logo.url)
-                    : null
+                const logo = resolveStartupLogoUrl(startup)
 
                 return (
                   <Link

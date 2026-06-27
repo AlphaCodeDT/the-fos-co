@@ -16,7 +16,7 @@ export async function getCurrentFounder(): Promise<Founder | null> {
     return (await payload.findByID({
       collection: 'founders',
       id: user.id,
-      depth: 1,
+      depth: 0,
       overrideAccess: true,
     })) as Founder
   } catch {

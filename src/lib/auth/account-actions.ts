@@ -4,7 +4,6 @@ import { getCurrentFounder } from '@/lib/auth/founder'
 import { plainTextToLexical } from '@/lib/richtext'
 import { getPayloadClient } from '@/lib/payload'
 import type { Founder, Startup } from '@/payload-types'
-import type { Payload } from 'payload'
 
 export type AccountActionState = {
   error?: string
@@ -25,13 +24,6 @@ function parseIdList(formData: FormData, key: string): number[] {
     .getAll(key)
     .map((value) => Number(value))
     .filter((id) => !Number.isNaN(id))
-}
-
-function parseOptionalMediaId(formData: FormData, key: string): number | undefined {
-  const raw = formData.get(key)
-  if (raw == null || raw === '') return undefined
-  const id = Number(raw)
-  return !Number.isNaN(id) && id > 0 ? id : undefined
 }
 
 function parseOptionalString(formData: FormData, key: string): string | undefined {
@@ -110,7 +102,7 @@ function buildFounderProfileData(formData: FormData): Partial<Founder> {
   const twitter = String(formData.get('twitter') || '').trim()
   const website = String(formData.get('website') || '').trim()
   const gender = parseOptionalString(formData, 'gender')
-  const avatarId = parseOptionalMediaId(formData, 'avatarId')
+  const avatarUrl = parseOptionalString(formData, 'avatarUrl')
 
   const data: Partial<Founder> = {
     name,
@@ -129,8 +121,8 @@ function buildFounderProfileData(formData: FormData): Partial<Founder> {
     openToOpportunities: formData.get('openToOpportunities') === 'on',
   }
 
-  if (avatarId) {
-    data.avatar = avatarId
+  if (avatarUrl) {
+    data.avatarUrl = avatarUrl
   }
 
   return data
@@ -149,7 +141,7 @@ function buildStartupData(formData: FormData): Partial<Startup> {
   const fundingStatus = parseOptionalString(formData, 'fundingStatus')
   const teamSize = parseOptionalNumber(formData, 'teamSize')
   const foundedYear = parseOptionalNumber(formData, 'foundedYear')
-  const logoId = parseOptionalMediaId(formData, 'logoId')
+  const logoUrl = parseOptionalString(formData, 'logoUrl')
 
   const data: Partial<Startup> = {
     name,
@@ -175,52 +167,11 @@ function buildStartupData(formData: FormData): Partial<Startup> {
     womenLed: formData.get('womenLed') === 'on',
   }
 
-  if (logoId) {
-    data.logo = logoId
+  if (logoUrl) {
+    data.logoUrl = logoUrl
   }
 
   return data
-}
-
-/** Copy file bytes into a standalone Node Buffer (never SharedArrayBuffer-backed). */
-async function fileToPlainBuffer(file: File): Promise<Buffer> {
-  const bytes = new Uint8Array(await file.arrayBuffer())
-  const data = Buffer.alloc(bytes.byteLength)
-  data.set(bytes)
-  return data
-}
-
-async function uploadFounderMedia({
-  payload,
-  founder,
-  file,
-  alt,
-}: {
-  payload: Payload
-  founder: Founder
-  file: File
-  alt: string
-}): Promise<number> {
-  const user = founderAuthUser(founder)
-  const data = await fileToPlainBuffer(file)
-
-  const media = await payload.create({
-    collection: 'media',
-    data: {
-      alt: alt || file.name,
-      uploadedBy: founder.id,
-    },
-    file: {
-      data,
-      name: file.name,
-      mimetype: file.type,
-      size: file.size,
-    },
-    overrideAccess: false,
-    user,
-  })
-
-  return media.id
 }
 
 export async function updateProfileAction(
@@ -252,31 +203,6 @@ export async function updateProfileAction(
     return { success: 'Profile updated. Changes may be reviewed before going live.' }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Could not update profile.'
-    return { error: message }
-  }
-}
-
-export async function uploadMediaAction(formData: FormData): Promise<{ error?: string; id?: number }> {
-  const founder = await getCurrentFounder()
-
-  if (!founder) {
-    return { error: 'You must be signed in.' }
-  }
-
-  const file = formData.get('file')
-
-  if (!(file instanceof File) || file.size === 0) {
-    return { error: 'Please choose an image file.' }
-  }
-
-  const alt = String(formData.get('alt') || founder.name || 'Uploaded image').trim()
-
-  try {
-    const payload = await getPayloadClient()
-    const id = await uploadFounderMedia({ payload, founder, file, alt })
-    return { id }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Upload failed.'
     return { error: message }
   }
 }

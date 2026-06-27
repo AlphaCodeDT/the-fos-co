@@ -2,23 +2,20 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { TrustBadge } from '@/components/community/TrustBadge'
+import { resolveFounderAvatarUrl } from '@/lib/media-image'
 import type { Founder, Media } from '@/payload-types'
-import { resolveMediaUrl } from '@/lib/url'
 
 type FounderCardProps = {
   founder: Pick<
     Founder,
-    'name' | 'slug' | 'headline' | 'city' | 'state' | 'country' | 'moderationStatus' | 'verificationStatus'
+    'name' | 'slug' | 'headline' | 'city' | 'state' | 'country' | 'moderationStatus' | 'verificationStatus' | 'avatarUrl'
   > & {
     avatar?: Media | number | null
   }
 }
 
 export function FounderCard({ founder }: FounderCardProps) {
-  const avatar =
-    founder.avatar && typeof founder.avatar === 'object'
-      ? resolveMediaUrl(founder.avatar.sizes?.thumb?.url || founder.avatar.url)
-      : null
+  const avatar = resolveFounderAvatarUrl(founder)
 
   const location = [founder.city, founder.state, founder.country].filter(Boolean).join(', ')
 

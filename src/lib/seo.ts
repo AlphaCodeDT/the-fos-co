@@ -3,6 +3,7 @@ import type { CommunityTrustFields } from '@/lib/trust'
 import { shouldNoIndexCommunityProfile } from '@/lib/trust'
 
 import { siteConfig } from '@/lib/site'
+import { resolveFounderAvatarUrl, resolveStartupLogoUrl } from '@/lib/media-image'
 import { absoluteUrl, resolveMediaUrl } from '@/lib/url'
 
 type StorySEOInput = Pick<Story, 'title' | 'excerpt' | 'slug' | 'publishedDate' | 'seo'> & {
@@ -137,10 +138,7 @@ export function buildArticleJsonLd(story: StorySEOInput) {
 }
 
 export function buildFounderPersonJsonLd(founder: Founder) {
-  const image =
-    founder.avatar && typeof founder.avatar === 'object'
-      ? resolveMediaUrl(founder.avatar.sizes?.og?.url || founder.avatar.url)
-      : undefined
+  const image = resolveFounderAvatarUrl(founder) || undefined
 
   const affiliations = (founder.organizations || [])
     .map((org) =>
@@ -170,10 +168,7 @@ export function buildStartupOrganizationJsonLd(
   startup: Startup,
   descriptionPlainText?: string,
 ) {
-  const logo =
-    startup.logo && typeof startup.logo === 'object'
-      ? resolveMediaUrl(startup.logo.sizes?.og?.url || startup.logo.url)
-      : undefined
+  const logo = resolveStartupLogoUrl(startup) || undefined
 
   const memberOf = (startup.organizations || [])
     .map((org) =>
