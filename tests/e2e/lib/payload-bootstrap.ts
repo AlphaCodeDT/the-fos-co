@@ -1,11 +1,13 @@
 import type { Payload } from 'payload'
 
 import { getPayloadClient } from '../../../src/lib/payload'
-import type { Founder, Startup } from '../../../src/payload-types'
+import type { Founder, Organization, Startup } from '../../../src/payload-types'
 
 import {
   e2eFounderEmail,
   e2eFounderName,
+  e2eOrgName,
+  e2eOrgSlug,
   e2eStartupName,
 } from './constants'
 import { richText } from './rich-text'
@@ -126,6 +128,94 @@ export async function createE2eRejectStartup({
   })
 }
 
+export async function createE2eOrganization({
+  payload,
+  token,
+  label = 'Org',
+  status = 'published',
+}: {
+  payload: Payload
+  token: string
+  label?: string
+  status?: Organization['status']
+}): Promise<Organization> {
+  const name = e2eOrgName(token, label)
+  const slugSuffix = label === 'Org' ? '' : label.toLowerCase()
+
+  return (await payload.create({
+    collection: 'organizations',
+    data: {
+      name,
+      slug: e2eOrgSlug(token, slugSuffix),
+      type: 'incubator',
+      status,
+      description: `E2E organization (${label}) for Playwright tests.`,
+    },
+    overrideAccess: true,
+  })) as Organization
+}
+
+export async function createE2eOrgLinkedStartup({
+  payload,
+  token,
+  industryId,
+  organizationId,
+}: {
+  payload: Payload
+  token: string
+  industryId: number
+  organizationId: number
+}): Promise<Startup> {
+  const name = e2eStartupName(token, 'OrgLinked')
+
+  return (await payload.create({
+    collection: 'startups',
+    data: {
+      name,
+      tagline: 'E2E org-linked startup',
+      industry: industryId,
+      city: 'Bengaluru',
+      country: 'India',
+      moderationStatus: 'approved',
+      verificationStatus: 'verified',
+      organizations: [organizationId],
+      claim: {
+        claimStatus: 'unclaimed',
+      },
+      description: richText(['E2E startup linked to E2E organization for Playwright tests.']),
+    },
+    overrideAccess: true,
+  })) as Startup
+}
+
+export async function linkFounderToOrganizations({
+  payload,
+  founderId,
+  organizationIds,
+  approve = true,
+}: {
+  payload: Payload
+  founderId: number
+  organizationIds: number[]
+  approve?: boolean
+}): Promise<Founder> {
+  const data: Partial<Founder> = {
+    organizations: organizationIds,
+  }
+
+  if (approve) {
+    data.moderationStatus = 'approved'
+    data.verificationStatus = 'verified'
+  }
+
+  return (await payload.update({
+    collection: 'founders',
+    id: founderId,
+    data,
+    overrideAccess: true,
+  })) as Founder
+}
+
 export async function submitClaimForFounder({
   payload,
   startupId,
@@ -181,7 +271,7 @@ export async function auditNoLeftoverE2eRows(
   payload: Payload,
   token: string,
 ): Promise<void> {
-  const [founders, startups] = await Promise.all([
+  const [founders, startups, organizations] = await Promise.all([
     payload.find({
       collection: 'founders',
       where: { name: { contains: token } },
@@ -194,14 +284,25 @@ export async function auditNoLeftoverE2eRows(
       limit: 5,
       overrideAccess: true,
     }),
+    payload.find({
+      collection: 'organizations',
+      where: { slug: { contains: `e2e-org` } },
+      limit: 10,
+      overrideAccess: true,
+    }),
   ])
 
-  const leftover = founders.totalDocs + startups.totalDocs
+  const orgLeftover = (organizations.docs as Organization[]).filter(
+    (doc) => doc.slug.includes(token) || doc.name.includes(token),
+  )
+
+  const leftover = founders.totalDocs + startups.totalDocs + orgLeftover.length
 
   if (leftover > 0) {
     const names = [
       ...founders.docs.map((doc) => `founder:${(doc as Founder).name}`),
       ...startups.docs.map((doc) => `startup:${(doc as Startup).name}`),
+      ...orgLeftover.map((doc) => `organization:${doc.name}`),
     ]
     throw new Error(`E2E teardown audit failed: ${leftover} leftover row(s): ${names.join(', ')}`)
   }

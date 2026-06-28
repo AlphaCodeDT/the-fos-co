@@ -289,7 +289,13 @@ export async function updateProfileAction(
     return { error: 'You must be signed in.' }
   }
 
-  const data = await applyOrganizationsFromForm(buildFounderProfileData(formData), formData)
+  let data: Partial<Founder>
+  try {
+    data = await applyOrganizationsFromForm(buildFounderProfileData(formData), formData)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Could not update profile.'
+    return { error: message }
+  }
 
   if (!data.name) {
     return { error: 'Name is required.' }

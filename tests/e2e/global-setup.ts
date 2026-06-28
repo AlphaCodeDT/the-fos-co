@@ -7,8 +7,11 @@ import { randomBytes } from 'crypto'
 import {
   createE2eClaimableStartup,
   createE2eFounder,
+  createE2eOrganization,
+  createE2eOrgLinkedStartup,
   getBootstrapPayload,
   getFirstIndustryId,
+  linkFounderToOrganizations,
 } from './lib/payload-bootstrap'
 import { writeRunState, readRunState } from './lib/run-state'
 
@@ -81,6 +84,34 @@ export default async function globalSetup(): Promise<void> {
     industryId,
   })
 
+  const publishedOrg = await createE2eOrganization({
+    payload,
+    token,
+    label: 'Org',
+    status: 'published',
+  })
+
+  const draftOrg = await createE2eOrganization({
+    payload,
+    token,
+    label: 'Draft',
+    status: 'draft',
+  })
+
+  await linkFounderToOrganizations({
+    payload,
+    founderId: primaryFounder.id,
+    organizationIds: [publishedOrg.id],
+    approve: true,
+  })
+
+  const orgLinkedStartup = await createE2eOrgLinkedStartup({
+    payload,
+    token,
+    industryId,
+    organizationId: publishedOrg.id,
+  })
+
   const adminEmail = process.env.ADMIN_EMAIL
   if (adminEmail) {
     const admin = await payload.find({
@@ -106,10 +137,16 @@ export default async function globalSetup(): Promise<void> {
     },
     startups: {
       claimable: claimableStartup.id,
+      orgLinked: orgLinkedStartup.id,
+    },
+    organizations: {
+      published: publishedOrg.id,
+      draft: draftOrg.id,
     },
     createdIds: {
       founders: [],
       startups: [],
+      organizations: [],
       media: [],
     },
     storagePrefix: `e2e/${token}`,

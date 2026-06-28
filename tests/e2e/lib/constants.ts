@@ -1,3 +1,5 @@
+import slugify from 'slugify'
+
 export const E2E_STABLE_PREFIX = 'E2E__'
 
 export function e2eFounderEmail(token: string, role: string): string {
@@ -10,4 +12,13 @@ export function e2eFounderName(token: string, label: string): string {
 
 export function e2eStartupName(token: string, label: string): string {
   return `${E2E_STABLE_PREFIX}${label} ${token}`
+}
+
+export function e2eOrgName(token: string, label = 'Org'): string {
+  return `${E2E_STABLE_PREFIX}${label} ${token}`
+}
+
+export function e2eOrgSlug(token: string, suffix = ''): string {
+  const raw = suffix ? `e2e-org-${suffix}-${token}` : `e2e-org-${token}`
+  return slugify(raw, { lower: true, strict: true })
 }

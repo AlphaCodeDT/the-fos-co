@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test'
 
 import { loginAsPrimaryFounder, requireRunState } from './lib/auth'
-import { e2eFounderName, e2eStartupName } from './lib/constants'
+import { e2eFounderName, e2eOrgName, e2eStartupName } from './lib/constants'
+import { requireE2eProdGuard } from './lib/guards'
 import { ensureImageFixtures } from './lib/fixtures'
 import {
   findStartupByName,
@@ -31,6 +32,7 @@ test.describe('founder account flows', () => {
   let fixturePaths: Awaited<ReturnType<typeof ensureImageFixtures>>
 
   test.beforeAll(async () => {
+    requireE2eProdGuard()
     requireRunState()
     fixturePaths = await ensureImageFixtures()
   })
@@ -239,5 +241,84 @@ test.describe('founder account flows', () => {
     ).toBeVisible({ timeout: 15_000 })
     await expect(page.getByText(/not allowed to access this page/i)).toBeVisible()
     await expect(page).not.toHaveURL(/\/admin\/collections/)
+  })
+
+  test('pre-fills organization picker and preserves orgs on untouched save', async ({ page }) => {
+    const state = requireRunState()
+    const orgChipLabel = `${e2eOrgName(state.token)} · Incubator`
+
+    await loginAsPrimaryFounder(page)
+    await page.getByRole('link', { name: 'My profile' }).click()
+    await page.waitForURL(/\/account\/profile/)
+
+    await expect(page.getByText(orgChipLabel)).toBeVisible()
+
+    await page.getByRole('button', { name: 'Save profile' }).click()
+    await expect(page.getByText('Saved')).toBeVisible({ timeout: 30_000 })
+
+    await page.reload()
+    await expect(page.getByText(orgChipLabel)).toBeVisible()
+  })
+
+  test('rejects invalid organization IDs on save', async ({ page }) => {
+    const state = requireRunState()
+    const orgChipLabel = `${e2eOrgName(state.token)} · Incubator`
+
+    await loginAsPrimaryFounder(page)
+    await page.getByRole('link', { name: 'My profile' }).click()
+    await page.waitForURL(/\/account\/profile/)
+    await expect(page.getByText(orgChipLabel)).toBeVisible()
+
+    await page.locator('form:has(#name)').evaluate((form) => {
+      const orgInputs = form.querySelectorAll<HTMLInputElement>('input[name="organizations"]')
+      if (orgInputs.length === 0) {
+        const input = document.createElement('input')
+        input.type = 'hidden'
+        input.name = 'organizations'
+        input.value = '999999'
+        form.appendChild(input)
+      } else {
+        orgInputs.forEach((input) => {
+          input.value = '999999'
+        })
+      }
+
+      let touched = form.querySelector<HTMLInputElement>('input[name="organizationsTouched"]')
+      if (!touched) {
+        touched = document.createElement('input')
+        touched.type = 'hidden'
+        touched.name = 'organizationsTouched'
+        form.appendChild(touched)
+      }
+      touched.value = '1'
+    })
+
+    await page.getByRole('button', { name: 'Save profile' }).click()
+    await expect(
+      page.getByText(/One or more selected organizations are invalid/i),
+    ).toBeVisible({ timeout: 30_000 })
+
+    await page.reload()
+    await expect(page.getByText(orgChipLabel)).toBeVisible()
+  })
+
+  test('clears organizations when all chips are removed', async ({ page }) => {
+    const state = requireRunState()
+    const orgName = e2eOrgName(state.token)
+    const orgChipLabel = `${orgName} · Incubator`
+
+    await loginAsPrimaryFounder(page)
+    await page.getByRole('link', { name: 'My profile' }).click()
+    await page.waitForURL(/\/account\/profile/)
+    await expect(page.getByText(orgChipLabel)).toBeVisible()
+
+    await page.getByRole('button', { name: `Remove ${orgName}` }).click()
+    await expect(page.getByText(orgChipLabel)).not.toBeVisible()
+
+    await page.getByRole('button', { name: 'Save profile' }).click()
+    await expect(page.getByText('Saved')).toBeVisible({ timeout: 30_000 })
+
+    await page.reload()
+    await expect(page.getByText(orgChipLabel)).not.toBeVisible()
   })
 })

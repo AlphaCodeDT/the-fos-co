@@ -26,8 +26,13 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'organizations',
+      testMatch: 'organizations.spec.ts',
+    },
+    {
       name: 'founder',
       testMatch: 'founder.spec.ts',
+      dependencies: ['organizations'],
     },
     {
       name: 'admin',
