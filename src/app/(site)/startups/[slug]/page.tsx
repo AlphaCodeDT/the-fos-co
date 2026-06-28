@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { BackedBySection } from '@/components/community/BackedByList'
-import { ChipList } from '@/components/community/ChipList'
 import { CohortBadge } from '@/components/community/CohortBadge'
 import { ClaimStartupButton } from '@/components/community/ClaimStartupButton'
 import { CommunityProfileContent } from '@/components/community/CommunityProfileContent'
@@ -19,7 +18,9 @@ import { SiteHeader } from '@/components/layout/SiteHeader'
 import { getCurrentFounder } from '@/lib/auth/founder'
 import { formatTeamRole } from '@/lib/community'
 import { getStartupBySlug } from '@/lib/data/community'
+import { formatLocationLine } from '@/lib/format-location'
 import { hasSocialLinks } from '@/lib/social-links'
+import { formatStartupStage } from '@/lib/startup-stage'
 import { lexicalToPlainText } from '@/lib/richtext'
 import { buildCommunityProfileMetadata, buildStartupOrganizationJsonLd } from '@/lib/seo'
 import { isIndexable } from '@/lib/trust'
@@ -89,6 +90,10 @@ export default async function StartupProfilePage({ params }: PageProps) {
     website: startup.website,
   }
 
+  const industryName =
+    startup.industry && typeof startup.industry === 'object' ? startup.industry.name : null
+  const stageLabel = formatStartupStage(startup.stage)
+
   return (
     <>
       {jsonLd ? (
@@ -122,10 +127,16 @@ export default async function StartupProfilePage({ params }: PageProps) {
             ) : null}
             {[startup.city, startup.state, startup.country].filter(Boolean).length > 0 ? (
               <p className="text-sm text-brand-white/50">
-                {[startup.city, startup.state, startup.country].filter(Boolean).join(', ')}
+                {formatLocationLine(startup.city, startup.state, startup.country)}
               </p>
             ) : null}
             <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              {industryName ? (
+                <span className="text-xs uppercase tracking-wide text-brand-yellow">{industryName}</span>
+              ) : null}
+              {stageLabel ? (
+                <span className="text-xs text-brand-white/70">{stageLabel}</span>
+              ) : null}
               <CohortBadge cohortName={startup.cohortName} cohortYear={startup.cohortYear} />
               <WomenLedBadge womenLed={startup.womenLed} />
               <OpportunityBadges startup={startup} />
@@ -136,19 +147,9 @@ export default async function StartupProfilePage({ params }: PageProps) {
           </div>
         </div>
 
-        {startup.industry || startup.organizations?.length ? (
-          <div className="mt-8 space-y-4">
-            {startup.industry ? (
-              <div>
-                <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-yellow">
-                  Industry
-                </h2>
-                <ChipList items={[startup.industry]} />
-              </div>
-            ) : null}
-            {startup.organizations?.length ? (
-              <BackedBySection organizations={startup.organizations} />
-            ) : null}
+        {startup.organizations?.length ? (
+          <div className="mt-8">
+            <BackedBySection organizations={startup.organizations} />
           </div>
         ) : null}
 

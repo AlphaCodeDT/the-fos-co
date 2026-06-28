@@ -1,25 +1,13 @@
 import type { ReactNode } from 'react'
 
-import { STARTUP_STAGE_OPTIONS } from '@/components/account/startup-form-constants'
 import type { Startup } from '@/payload-types'
 
 type StartupCompanyDetailsProps = {
-  startup: Pick<
-    Startup,
-    'stage' | 'foundedYear' | 'teamSize' | 'fundingStatus' | 'website'
-  >
-}
-
-function formatStage(stage: Startup['stage']): string | null {
-  if (!stage) return null
-  return STARTUP_STAGE_OPTIONS.find((option) => option.value === stage)?.label || stage
+  startup: Pick<Startup, 'foundedYear' | 'teamSize' | 'fundingStatus'>
 }
 
 export function StartupCompanyDetails({ startup }: StartupCompanyDetailsProps) {
   const details: Array<{ label: string; value: ReactNode }> = []
-
-  const stage = formatStage(startup.stage)
-  if (stage) details.push({ label: 'Stage', value: stage })
 
   if (startup.foundedYear) {
     details.push({ label: 'Founded', value: String(startup.foundedYear) })
@@ -31,22 +19,6 @@ export function StartupCompanyDetails({ startup }: StartupCompanyDetailsProps) {
 
   if (startup.fundingStatus?.trim()) {
     details.push({ label: 'Funding status', value: startup.fundingStatus.trim() })
-  }
-
-  if (startup.website?.trim()) {
-    details.push({
-      label: 'Website',
-      value: (
-        <a
-          href={startup.website.trim()}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-brand-yellow hover:underline"
-        >
-          {startup.website.trim()}
-        </a>
-      ),
-    })
   }
 
   if (details.length === 0) return null

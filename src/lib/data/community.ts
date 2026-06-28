@@ -3,6 +3,7 @@ import type { Founder, Startup } from '@/payload-types'
 import {
   buildFounderWhere,
   buildStartupWhere,
+  isWomenFounderFromGender,
   type DirectoryLocationFilters,
   type FounderFilters,
   type StartupFilters,
@@ -49,6 +50,11 @@ async function resolveFilterIds(filters: FounderFilters | StartupFilters) {
   return { industryId, organizationId }
 }
 
+export function mapFounderForPublic<T extends { gender?: Founder['gender'] }>(doc: T) {
+  const { gender, ...rest } = doc
+  return { ...rest, isWomenFounder: isWomenFounderFromGender(gender) }
+}
+
 export async function getFounders({
   filters = {},
   page = 1,
@@ -61,7 +67,7 @@ export async function getFounders({
   const payload = await getPayloadClient()
   const resolved = await resolveFilterIds(filters)
 
-  return payload.find({
+  const result = await payload.find({
     collection: 'founders',
     where: buildFounderWhere(filters, resolved),
     sort: 'name',
@@ -83,6 +89,9 @@ export async function getFounders({
       verificationStatus: true,
       lookingForCoFounder: true,
       openToOpportunities: true,
+      gender: true,
+      industries: true,
+      organizations: true,
       linkedIn: true,
       twitter: true,
       instagram: true,
@@ -92,6 +101,11 @@ export async function getFounders({
       website: true,
     },
   })
+
+  return {
+    ...result,
+    docs: result.docs.map(mapFounderForPublic),
+  }
 }
 
 export async function getStartups({
@@ -138,6 +152,9 @@ export async function getStartups({
       youtube: true,
       github: true,
       website: true,
+      stage: true,
+      fundingStatus: true,
+      foundedYear: true,
     },
   })
 }

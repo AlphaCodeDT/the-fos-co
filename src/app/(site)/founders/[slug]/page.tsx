@@ -10,10 +10,12 @@ import { CohortBadge } from '@/components/community/CohortBadge'
 import { FounderOpportunityBadges } from '@/components/community/FounderOpportunityBadges'
 import { SocialLinks } from '@/components/community/SocialLinks'
 import { TrustBadge } from '@/components/community/TrustBadge'
+import { WomenFounderBadge } from '@/components/community/WomenFounderBadge'
 import { SiteFooter } from '@/components/layout/site-chrome'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { formatTeamRole } from '@/lib/community'
-import { getFounderBySlug, getStartupsForFounder } from '@/lib/data/community'
+import { getFounderBySlug, getStartupsForFounder, mapFounderForPublic } from '@/lib/data/community'
+import { formatLocationLine } from '@/lib/format-location'
 import { hasSocialLinks } from '@/lib/social-links'
 import { buildCommunityProfileMetadata, buildFounderPersonJsonLd } from '@/lib/seo'
 import { isIndexable } from '@/lib/trust'
@@ -52,9 +54,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function FounderProfilePage({ params }: PageProps) {
   const { slug } = await params
-  const founder = await getFounderBySlug(slug)
+  const founderRaw = await getFounderBySlug(slug)
 
-  if (!founder) notFound()
+  if (!founderRaw) notFound()
+
+  const founder = mapFounderForPublic(founderRaw)
 
   const startupsResult = await getStartupsForFounder(founder.id)
   const linkedStartups = startupsResult.docs
@@ -106,11 +110,20 @@ export default async function FounderProfilePage({ params }: PageProps) {
             ) : null}
             {[founder.city, founder.state, founder.country].filter(Boolean).length > 0 ? (
               <p className="text-sm text-brand-white/50">
-                {[founder.city, founder.state, founder.country].filter(Boolean).join(', ')}
+                {formatLocationLine(founder.city, founder.state, founder.country)}
               </p>
             ) : null}
-            <CohortBadge cohortName={founder.cohortName} cohortYear={founder.cohortYear} className="mt-1" />
-            <FounderOpportunityBadges founder={founder} className="pt-1" />
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <CohortBadge cohortName={founder.cohortName} cohortYear={founder.cohortYear} />
+              <WomenFounderBadge isWomenFounder={founder.isWomenFounder} />
+              <FounderOpportunityBadges
+                founder={{
+                  lookingForCoFounder: founder.lookingForCoFounder,
+                  openToOpportunities: founder.openToOpportunities,
+                }}
+                className="contents"
+              />
+            </div>
             {hasSocialLinks(socialLinks) ? (
               <SocialLinks links={socialLinks} className="pt-1" />
             ) : null}

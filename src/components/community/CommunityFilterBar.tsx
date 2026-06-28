@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { buildDirectorySearchParams, type DirectoryLocationFilters } from '@/lib/community-filters'
+import { formatLocationCity } from '@/lib/format-location'
 import type { Industry, Organization } from '@/payload-types'
 import { cn } from '@/lib/utils'
 
@@ -73,6 +74,11 @@ export function CommunityFilterBar({
       state,
       city: state && city ? city : null,
       cohort: (formData.get('cohort') as string) || null,
+      ...(variant === 'founders'
+        ? {
+            women: formData.get('women') === 'on' ? '1' : null,
+          }
+        : {}),
       ...(variant === 'startups'
         ? {
             womenLed: formData.get('womenLed') === 'on' ? '1' : null,
@@ -182,7 +188,7 @@ export function CommunityFilterBar({
             <option value="">All cities</option>
             {cityOptions.map((city) => (
               <option key={city} value={city}>
-                {city}
+                {formatLocationCity(city)}
               </option>
             ))}
           </select>
@@ -232,6 +238,18 @@ export function CommunityFilterBar({
           />
           Verified only
         </label>
+
+        {variant === 'founders' ? (
+          <label className="flex items-center gap-2 text-sm text-brand-white/80">
+            <input
+              type="checkbox"
+              name="women"
+              defaultChecked={getParam(current, 'women') === '1'}
+              className="accent-brand-yellow"
+            />
+            Women founders
+          </label>
+        ) : null}
 
         {variant === 'startups' ? (
           <>

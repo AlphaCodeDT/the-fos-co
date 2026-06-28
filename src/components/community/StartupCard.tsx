@@ -6,8 +6,10 @@ import { OpportunityBadges } from '@/components/community/OpportunityBadges'
 import { SocialLinks } from '@/components/community/SocialLinks'
 import { TrustBadge } from '@/components/community/TrustBadge'
 import { WomenLedBadge } from '@/components/community/WomenLedBadge'
+import { formatLocationLine } from '@/lib/format-location'
 import { resolveStartupLogoUrl } from '@/lib/media-image'
 import { hasSocialLinks } from '@/lib/social-links'
+import { formatStartupStage } from '@/lib/startup-stage'
 import type { Industry, Media, Startup } from '@/payload-types'
 
 type StartupCardProps = {
@@ -35,6 +37,9 @@ type StartupCardProps = {
     | 'youtube'
     | 'github'
     | 'website'
+    | 'stage'
+    | 'fundingStatus'
+    | 'foundedYear'
   > & {
     logo?: Media | number | null
     industry?: Industry | number | null
@@ -47,7 +52,9 @@ export function StartupCard({ startup }: StartupCardProps) {
   const industryName =
     startup.industry && typeof startup.industry === 'object' ? startup.industry.name : null
 
-  const location = [startup.city, startup.state, startup.country].filter(Boolean).join(', ')
+  const stageLabel = formatStartupStage(startup.stage)
+
+  const location = formatLocationLine(startup.city, startup.state, startup.country)
 
   const socialLinks = {
     linkedIn: startup.linkedIn,
@@ -58,6 +65,12 @@ export function StartupCard({ startup }: StartupCardProps) {
     github: startup.github,
     website: startup.website,
   }
+
+  const metadataParts = [
+    stageLabel,
+    startup.fundingStatus?.trim() || null,
+    startup.foundedYear ? `Founded ${startup.foundedYear}` : null,
+  ].filter(Boolean)
 
   return (
     <article className="group overflow-hidden rounded-2xl border border-brand-white/10 bg-brand-black/60">
@@ -94,6 +107,9 @@ export function StartupCard({ startup }: StartupCardProps) {
               <WomenLedBadge womenLed={startup.womenLed} />
               <OpportunityBadges startup={startup} />
             </div>
+            {metadataParts.length > 0 ? (
+              <p className="text-xs text-brand-white/50">{metadataParts.join(' · ')}</p>
+            ) : null}
             {hasSocialLinks(socialLinks) ? (
               <SocialLinks links={socialLinks} limit={3} iconClassName="h-7 w-7" />
             ) : null}

@@ -1,11 +1,19 @@
 import type { Where } from 'payload'
 
+import type { Founder } from '@/payload-types'
 import { approvedCommunityWhere } from '@/lib/queries'
+
+export const WOMAN_FOUNDER_GENDER = 'female' as const
+
+export function isWomenFounderFromGender(gender: Founder['gender']): boolean {
+  return gender === WOMAN_FOUNDER_GENDER
+}
 
 export type FounderFilters = {
   industrySlug?: string
   organizationSlug?: string
   verifiedOnly?: boolean
+  womenFounders?: boolean
   query?: string
   state?: string
   city?: string
@@ -70,6 +78,7 @@ export function parseFounderSearchParams(params: SearchParams): {
       industrySlug: getParam(params, 'industry'),
       organizationSlug: getParam(params, 'organization'),
       verifiedOnly: isTruthyParam(getParam(params, 'verified')),
+      womenFounders: isTruthyParam(getParam(params, 'women')),
       query: getParam(params, 'q')?.trim() || undefined,
       ...parseLocationFilters(params),
     },
@@ -128,6 +137,10 @@ export function buildFounderWhere(
 
   if (filters.verifiedOnly) {
     clauses.push({ verificationStatus: { equals: 'verified' } })
+  }
+
+  if (filters.womenFounders) {
+    clauses.push({ gender: { equals: WOMAN_FOUNDER_GENDER } })
   }
 
   if (filters.query) {

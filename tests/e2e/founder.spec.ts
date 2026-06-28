@@ -9,6 +9,22 @@ import {
 } from './lib/payload-bootstrap'
 import { appendCreatedId } from './lib/run-state'
 
+/** Must match gender option values in src/collections/Founders.ts */
+const PUBLIC_GENDER_ENUM_VALUES = [
+  'female',
+  'male',
+  'non-binary',
+  'prefer-not-to-say',
+  'other',
+] as const
+
+function assertGenderNotLeakedInHtml(html: string) {
+  for (const value of PUBLIC_GENDER_ENUM_VALUES) {
+    expect(html).not.toContain(`"gender":"${value}"`)
+    expect(html).not.toContain(`\\"gender\\":\\"${value}\\"`)
+  }
+}
+
 test.describe.configure({ mode: 'serial' })
 
 test.describe('founder account flows', () => {
@@ -101,6 +117,47 @@ test.describe('founder account flows', () => {
     })
 
     await page.goto('/founders?state=Karnataka')
+    await expect(page.getByRole('heading', { name: new RegExp(state.token) })).toBeVisible()
+  })
+
+  test('women founder filter, badge, city alias, and gender privacy', async ({ page }) => {
+    const state = requireRunState()
+    const payload = await getBootstrapPayload()
+
+    await payload.update({
+      collection: 'founders',
+      id: state.founders.primary,
+      data: {
+        gender: 'female',
+        moderationStatus: 'approved',
+        verificationStatus: 'verified',
+      },
+      overrideAccess: true,
+    })
+
+    const founderDoc = await payload.findByID({
+      collection: 'founders',
+      id: state.founders.primary,
+      overrideAccess: true,
+    })
+
+    await page.goto('/founders?women=1&state=Karnataka')
+    await expect(page.getByRole('heading', { name: new RegExp(state.token) })).toBeVisible()
+    assertGenderNotLeakedInHtml(await page.content())
+
+    await page.goto('/founders?women=1&state=Tamil Nadu')
+    await expect(page.getByRole('heading', { name: new RegExp(state.token) })).not.toBeVisible()
+
+    await page.goto(`/founders/${founderDoc.slug}`)
+    await expect(page.getByText('Women founder')).toBeVisible()
+    await expect(page.getByText(/Bengaluru/)).toBeVisible()
+    await expect(page.getByText('Bangalore Urban')).not.toBeVisible()
+    assertGenderNotLeakedInHtml(await page.content())
+
+    await page.goto('/founders?state=Karnataka')
+    await expect(page.locator('#city option[value="Bangalore Urban"]')).toHaveText('Bengaluru')
+
+    await page.goto('/founders?state=Karnataka&city=Bangalore+Urban&women=1')
     await expect(page.getByRole('heading', { name: new RegExp(state.token) })).toBeVisible()
   })
 
