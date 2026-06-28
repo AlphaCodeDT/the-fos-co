@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { AddStartupEntry } from '@/components/account/AddStartupEntry'
 import { AccountShell } from '@/components/account/AccountShell'
 import { requireFounder } from '@/lib/auth/founder'
 import { describeModerationStatus, getFounderStartups } from '@/lib/data/account'
@@ -21,14 +22,13 @@ export default async function AccountStartupsPage() {
       description="Startups you own or have claimed. New and edited startups stay private until approved."
     >
       <div className="mb-6">
-        <Button asChild>
-          <Link href="/account/startups/new">Create startup</Link>
-        </Button>
+        <AddStartupEntry />
       </div>
 
       {startups.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-brand-white/20 p-8 text-center text-brand-white/60">
-          You don&apos;t have any startups yet. Create one or claim an existing profile from the directory.
+          You don&apos;t have any startups yet. Use <strong>Add your startup</strong> to claim an
+          existing listing or create a new one.
         </div>
       ) : (
         <ul className="space-y-3">

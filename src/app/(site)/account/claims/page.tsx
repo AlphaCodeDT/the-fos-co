@@ -19,7 +19,8 @@ export default async function AccountClaimsPage() {
     >
       {claims.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-brand-white/20 p-8 text-center text-brand-white/60">
-          You haven&apos;t submitted any startup claims yet. Browse startups and claim an unclaimed profile.
+          You haven&apos;t submitted any startup claims yet. Use{' '}
+          <strong>Add your startup</strong> on My startups to search and claim a listing.
         </div>
       ) : (
         <ul className="space-y-3">

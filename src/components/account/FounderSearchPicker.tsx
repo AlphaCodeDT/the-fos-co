@@ -1,10 +1,9 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { SearchPicker, SearchPickerRow } from '@/components/account/SearchPicker'
 import { searchFoundersAction } from '@/lib/auth/account-actions'
 import {
   formatFounderSearchSubtitle,
@@ -58,8 +57,6 @@ export function FounderSearchPicker({
   founderFieldName,
   nameFieldName,
 }: FounderSearchPickerProps) {
-  const listboxId = useId()
-  const containerRef = useRef<HTMLDivElement>(null)
   const [results, setResults] = useState<FounderSearchResult[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
@@ -95,17 +92,6 @@ export function FounderSearchPicker({
     return () => window.clearTimeout(timeout)
   }, [value.displayName, value.linkedProfile])
 
-  useEffect(() => {
-    function handlePointerDown(event: MouseEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handlePointerDown)
-    return () => document.removeEventListener('mousedown', handlePointerDown)
-  }, [])
-
   function selectResult(result: FounderSearchResult) {
     onChange({
       founderId: result.id,
@@ -125,90 +111,72 @@ export function FounderSearchPicker({
   }
 
   return (
-    <div ref={containerRef} className="relative space-y-2">
+    <div className="space-y-2">
       {value.founderId ? (
         <input type="hidden" name={founderFieldName} value={value.founderId} />
       ) : value.displayName.trim() ? (
         <input type="hidden" name={nameFieldName} value={value.displayName.trim()} />
       ) : null}
 
-      <Label htmlFor={inputId}>Team member</Label>
-      <Input
-        id={inputId}
-        type="text"
-        autoComplete="off"
-        role="combobox"
-        aria-expanded={isOpen}
-        aria-controls={listboxId}
+      <SearchPicker
+        inputId={inputId}
+        label="Team member"
         placeholder="Search by name or enter manually"
-        value={value.displayName}
-        onChange={(event) => {
+        query={value.displayName}
+        onQueryChange={(displayName) => {
           onChange({
             founderId: null,
-            displayName: event.target.value,
+            displayName,
             linkedProfile: null,
           })
         }}
+        results={value.linkedProfile ? [] : results}
+        isOpen={isOpen && !value.linkedProfile}
+        onOpenChange={setIsOpen}
+        isSearching={isSearching && !value.linkedProfile}
+        getKey={(result) => result.id}
         onFocus={() => {
           if (!value.linkedProfile && results.length > 0) {
             setIsOpen(true)
           }
         }}
-      />
-
-      {value.linkedProfile ? (
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-yellow/30 bg-brand-yellow/10 px-2.5 py-1 text-xs font-medium text-brand-yellow">
-            ✓ Linked to FoS profile
-          </span>
+        renderOption={(result) => (
           <button
             type="button"
-            onClick={clearLink}
-            className="text-xs text-brand-white/50 underline-offset-2 hover:text-brand-white hover:underline"
+            className="flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-brand-white/5"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => selectResult(result)}
           >
-            Unlink
+            <SearchPickerRow
+              avatar={
+                <FounderAvatar
+                  name={result.name}
+                  avatarUrl={result.avatarUrl}
+                  sizeClassName="mt-0.5 h-8 w-8 text-sm"
+                />
+              }
+              primary={result.name}
+              secondary={formatFounderSearchSubtitle(result) || null}
+            />
           </button>
-        </div>
-      ) : null}
-
-      {isSearching ? (
-        <p className="text-xs text-brand-white/40">Searching…</p>
-      ) : null}
-
-      {isOpen && results.length > 0 ? (
-        <ul
-          id={listboxId}
-          role="listbox"
-          className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-brand-white/10 bg-brand-black shadow-lg"
-        >
-          {results.map((result) => {
-            const subtitle = formatFounderSearchSubtitle(result)
-
-            return (
-              <li key={result.id} role="option">
-                <button
-                  type="button"
-                  className="flex w-full items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-brand-white/5"
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => selectResult(result)}
-                >
-                  <FounderAvatar
-                    name={result.name}
-                    avatarUrl={result.avatarUrl}
-                    sizeClassName="mt-0.5 h-8 w-8 text-sm"
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-semibold text-brand-white">{result.name}</span>
-                    {subtitle ? (
-                      <span className="mt-0.5 block text-xs text-brand-white/50">{subtitle}</span>
-                    ) : null}
-                  </span>
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      ) : null}
+        )}
+        footer={
+          value.linkedProfile ? (
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-yellow/30 bg-brand-yellow/10 px-2.5 py-1 text-xs font-medium text-brand-yellow">
+                ✓ Linked to FoS profile
+              </span>
+              <button
+                type="button"
+                onClick={clearLink}
+                className="text-xs text-brand-white/50 underline-offset-2 hover:text-brand-white hover:underline"
+              >
+                Unlink
+              </button>
+            </div>
+          ) : null
+        }
+      />
     </div>
   )
 }

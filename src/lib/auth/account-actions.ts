@@ -2,6 +2,7 @@
 
 import { getCurrentFounder } from '@/lib/auth/founder'
 import { searchFounders } from '@/lib/data/founder-search'
+import { searchStartups } from '@/lib/data/startup-search'
 import { plainTextToLexical } from '@/lib/richtext'
 import { getPayloadClient } from '@/lib/payload'
 import { SOCIAL_LINK_FIELDS, type SocialLinkField } from '@/lib/social-links'
@@ -216,6 +217,16 @@ export async function searchFoundersAction(query: string) {
   }
 
   return searchFounders(query)
+}
+
+export async function searchStartupsAction(query: string) {
+  const founder = await getCurrentFounder()
+
+  if (!founder) {
+    return []
+  }
+
+  return searchStartups(query, founder.id)
 }
 
 export async function updateProfileAction(
