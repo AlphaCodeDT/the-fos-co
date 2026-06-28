@@ -1,14 +1,15 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState } from 'react'
 import Link from 'next/link'
 
 import { FormMessage } from '@/components/account/AccountShell'
+import { ImageSubmitProgress } from '@/components/account/ImageSubmitProgress'
 import { ImageUploadField } from '@/components/account/ImageUploadField'
+import { useImageFormSubmit } from '@/components/account/useImageFormSubmit'
 import { StartupFormFields } from '@/components/account/StartupFormFields'
 import { Button } from '@/components/ui/button'
 import { createStartupAction, type AccountActionState } from '@/lib/auth/account-actions'
-import { uploadImageDirect } from '@/lib/auth/direct-upload'
 import type { Industry, Organization } from '@/payload-types'
 
 const initialState: AccountActionState = {}
@@ -23,34 +24,28 @@ export function NewStartupForm({
   currentFounderId: number
 }) {
   const [state, formAction, pending] = useActionState(createStartupAction, initialState)
-  const [pendingFile, setPendingFile] = useState<File | null>(null)
-  const [uploadError, setUploadError] = useState<string>()
-  const [uploading, setUploading] = useState(false)
+  const {
+    setPendingFile,
+    phase,
+    uploadPercent,
+    uploadIndeterminate,
+    uploadError,
+    handleSubmit,
+    isBusy,
+  } = useImageFormSubmit({
+    kind: 'logo',
+    urlFieldName: 'logoUrl',
+    formAction,
+    pending,
+    actionState: state,
+  })
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setUploadError(undefined)
-
-    const form = event.currentTarget
-    const formData = new FormData(form)
-
-    if (pendingFile) {
-      setUploading(true)
-      const result = await uploadImageDirect(pendingFile, 'logo')
-      setUploading(false)
-
-      if (result.error) {
-        setUploadError(result.error)
-        return
-      }
-
-      if (result.publicUrl) {
-        formData.set('logoUrl', result.publicUrl)
-      }
-    }
-
-    formAction(formData)
-  }
+  const submitLabel =
+    phase === 'uploading'
+      ? 'Uploading…'
+      : phase === 'saving' || pending
+        ? 'Creating…'
+        : 'Create startup'
 
   return (
     <form
@@ -59,11 +54,6 @@ export function NewStartupForm({
     >
       <FormMessage {...state} />
       {uploadError ? <FormMessage error={uploadError} /> : null}
-      {uploading ? (
-        <p className="text-sm text-brand-white/70" role="status">
-          Uploading image…
-        </p>
-      ) : null}
 
       <ImageUploadField id="logo" label="Logo" shape="square" onFileSelect={setPendingFile} />
 
@@ -73,13 +63,20 @@ export function NewStartupForm({
         currentFounderId={currentFounderId}
       />
 
-      <div className="flex gap-3">
-        <Button type="submit" disabled={pending || uploading}>
-          {uploading ? 'Uploading…' : pending ? 'Creating…' : 'Create startup'}
-        </Button>
-        <Button asChild variant="outline">
-          <Link href="/account/startups">Cancel</Link>
-        </Button>
+      <div className="space-y-3">
+        <ImageSubmitProgress
+          phase={phase}
+          uploadPercent={uploadPercent}
+          uploadIndeterminate={uploadIndeterminate}
+        />
+        <div className="flex gap-3">
+          <Button type="submit" disabled={isBusy}>
+            {submitLabel}
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/account/startups">Cancel</Link>
+          </Button>
+        </div>
       </div>
     </form>
   )

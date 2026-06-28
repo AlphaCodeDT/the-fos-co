@@ -16,7 +16,7 @@ export type SignedUploadKind = 'avatar' | 'logo'
 
 export type SignedUploadResult =
   | { error: string }
-  | { path: string; token: string }
+  | { path: string; token: string; signedUrl: string }
 
 function sanitizeUploadFileName(fileName: string): string {
   const base = fileName
@@ -54,9 +54,9 @@ export async function createSignedUpload({
   const supabase = createSupabaseServiceClient()
   const { data, error } = await supabase.storage.from('media').createSignedUploadUrl(path)
 
-  if (error || !data?.token) {
+  if (error || !data?.token || !data.signedUrl) {
     return { error: error?.message || 'Could not create upload URL.' }
   }
 
-  return { path: data.path, token: data.token }
+  return { path: data.path, token: data.token, signedUrl: data.signedUrl }
 }

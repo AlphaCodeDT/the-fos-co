@@ -1,14 +1,15 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState } from 'react'
 
 import { FormMessage } from '@/components/account/AccountShell'
+import { ImageSubmitProgress } from '@/components/account/ImageSubmitProgress'
 import { ImageUploadField } from '@/components/account/ImageUploadField'
+import { useImageFormSubmit } from '@/components/account/useImageFormSubmit'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { updateProfileAction, type AccountActionState } from '@/lib/auth/account-actions'
-import { uploadImageDirect } from '@/lib/auth/direct-upload'
 import { resolveFounderAvatarUrl } from '@/lib/media-image'
 import { lexicalToPlainText } from '@/lib/richtext'
 import type { Founder, Industry, Organization } from '@/payload-types'
@@ -34,9 +35,21 @@ export function ProfileForm({
   organizations: Organization[]
 }) {
   const [state, formAction, pending] = useActionState(updateProfileAction, initialState)
-  const [pendingFile, setPendingFile] = useState<File | null>(null)
-  const [uploadError, setUploadError] = useState<string>()
-  const [uploading, setUploading] = useState(false)
+  const {
+    setPendingFile,
+    phase,
+    uploadPercent,
+    uploadIndeterminate,
+    uploadError,
+    handleSubmit,
+    isBusy,
+  } = useImageFormSubmit({
+    kind: 'avatar',
+    urlFieldName: 'avatarUrl',
+    formAction,
+    pending,
+    actionState: state,
+  })
 
   const selectedIndustries = new Set(
     (founder.industries || [])
@@ -50,32 +63,14 @@ export function ProfileForm({
       .filter((id): id is number => typeof id === 'number'),
   )
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setUploadError(undefined)
-
-    const form = event.currentTarget
-    const formData = new FormData(form)
-
-    if (pendingFile) {
-      setUploading(true)
-      const result = await uploadImageDirect(pendingFile, 'avatar')
-      setUploading(false)
-
-      if (result.error) {
-        setUploadError(result.error)
-        return
-      }
-
-      if (result.publicUrl) {
-        formData.set('avatarUrl', result.publicUrl)
-      }
-    }
-
-    formAction(formData)
-  }
-
   const initialAvatarUrl = resolveFounderAvatarUrl(founder)
+
+  const submitLabel =
+    phase === 'uploading'
+      ? 'Uploading…'
+      : phase === 'saving' || pending
+        ? 'Saving…'
+        : 'Save profile'
 
   return (
     <form
@@ -84,11 +79,6 @@ export function ProfileForm({
     >
       <FormMessage {...state} />
       {uploadError ? <FormMessage error={uploadError} /> : null}
-      {uploading ? (
-        <p className="text-sm text-brand-white/70" role="status">
-          Uploading image…
-        </p>
-      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2 sm:col-span-2">
@@ -216,9 +206,16 @@ export function ProfileForm({
         </label>
       </div>
 
-      <Button type="submit" disabled={pending || uploading}>
-        {uploading ? 'Uploading…' : pending ? 'Saving…' : 'Save profile'}
-      </Button>
+      <div className="space-y-3">
+        <ImageSubmitProgress
+          phase={phase}
+          uploadPercent={uploadPercent}
+          uploadIndeterminate={uploadIndeterminate}
+        />
+        <Button type="submit" disabled={isBusy}>
+          {submitLabel}
+        </Button>
+      </div>
     </form>
   )
 }

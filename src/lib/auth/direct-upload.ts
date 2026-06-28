@@ -1,11 +1,34 @@
 'use client'
 
 import { createSignedUpload, type SignedUploadKind } from '@/lib/auth/upload-actions'
+import { uploadImageWithProgress } from '@/lib/auth/upload-progress'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
+
+export type UploadProgressCallback = (percent: number | null) => void
+
+async function uploadWithSignedUrlFallback(
+  path: string,
+  token: string,
+  file: File,
+  onProgress?: UploadProgressCallback,
+): Promise<void> {
+  onProgress?.(null)
+
+  const supabase = createSupabaseBrowserClient()
+  const { error } = await supabase.storage.from('media').uploadToSignedUrl(path, token, file, {
+    contentType: file.type,
+    upsert: false,
+  })
+
+  if (error) {
+    throw new Error(error.message)
+  }
+}
 
 export async function uploadImageDirect(
   file: File,
   kind: SignedUploadKind,
+  onProgress?: UploadProgressCallback,
 ): Promise<{ publicUrl?: string; error?: string }> {
   const signed = await createSignedUpload({
     kind,
@@ -22,18 +45,24 @@ export async function uploadImageDirect(
     return { error: 'Could not prepare upload.' }
   }
 
-  const supabase = createSupabaseBrowserClient()
-  const { error: uploadError } = await supabase.storage
-    .from('media')
-    .uploadToSignedUrl(signed.path, signed.token, file, {
-      contentType: file.type,
-      upsert: false,
-    })
+  const { path, token, signedUrl } = signed
 
-  if (uploadError) {
-    return { error: uploadError.message }
+  try {
+    if (signedUrl) {
+      try {
+        await uploadImageWithProgress(file, signedUrl, (percent) => onProgress?.(percent))
+      } catch {
+        await uploadWithSignedUrlFallback(path, token, file, onProgress)
+      }
+    } else {
+      await uploadWithSignedUrlFallback(path, token, file, onProgress)
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Upload failed.'
+    return { error: message }
   }
 
-  const { data } = supabase.storage.from('media').getPublicUrl(signed.path)
+  const supabase = createSupabaseBrowserClient()
+  const { data } = supabase.storage.from('media').getPublicUrl(path)
   return { publicUrl: data.publicUrl }
 }
