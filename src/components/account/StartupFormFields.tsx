@@ -2,6 +2,8 @@
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { CohortFormFields } from '@/components/account/CohortFormFields'
+import { LocationSelectFields } from '@/components/account/LocationSelectFields'
 import { OpportunitySection } from '@/components/account/OpportunitySection'
 import { SocialLinksFormSection } from '@/components/account/SocialLinksFormSection'
 import {
@@ -95,18 +97,15 @@ export function StartupFormFields({
             defaultValue={startup?.teamSize ?? ''}
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="city">City</Label>
-          <Input id="city" name="city" defaultValue={startup?.city || ''} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="state">State</Label>
-          <Input id="state" name="state" defaultValue={startup?.state || ''} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="country">Country</Label>
-          <Input id="country" name="country" defaultValue={startup?.country || ''} />
-        </div>
+        <LocationSelectFields
+          className="sm:col-span-2"
+          initialValues={{
+            country: startup?.country ?? undefined,
+            state: startup?.state ?? undefined,
+            city: startup?.city ?? undefined,
+            stateCode: startup?.stateCode ?? undefined,
+          }}
+        />
         <div className="space-y-2">
           <Label htmlFor="fundingStatus">Funding status</Label>
           <Input
@@ -128,6 +127,8 @@ export function StartupFormFields({
           />
         </div>
       </div>
+
+      <CohortFormFields cohortName={startup?.cohortName} cohortYear={startup?.cohortYear} />
 
       <SocialLinksFormSection
         values={{

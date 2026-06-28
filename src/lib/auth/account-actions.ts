@@ -118,13 +118,24 @@ function parseOpportunityRows(formData: FormData): Startup['opportunities'] {
   return rows.length > 0 ? rows : undefined
 }
 
+function assignOptionalString(target: Record<string, unknown>, formData: FormData, key: string) {
+  const value = parseOptionalString(formData, key)
+  if (value !== undefined) {
+    target[key] = value
+  }
+}
+
+function assignOptionalNumber(target: Record<string, unknown>, formData: FormData, key: string) {
+  const value = parseOptionalNumber(formData, key)
+  if (value !== undefined) {
+    target[key] = value
+  }
+}
+
 function buildFounderProfileData(formData: FormData): Partial<Founder> {
   const name = String(formData.get('name') || '').trim()
   const headline = String(formData.get('headline') || '').trim()
   const bioText = String(formData.get('bio') || '').trim()
-  const city = String(formData.get('city') || '').trim()
-  const state = String(formData.get('state') || '').trim()
-  const country = String(formData.get('country') || '').trim()
   const gender = parseOptionalString(formData, 'gender')
   const avatarUrl = parseOptionalString(formData, 'avatarUrl')
   const socialLinks = parseSocialLinks(formData)
@@ -133,9 +144,6 @@ function buildFounderProfileData(formData: FormData): Partial<Founder> {
     name,
     headline: headline || undefined,
     bio: bioText ? (plainTextToLexical(bioText) as Founder['bio']) : undefined,
-    city: city || undefined,
-    state: state || undefined,
-    country: country || undefined,
     linkedIn: socialLinks.linkedIn,
     twitter: socialLinks.twitter,
     instagram: socialLinks.instagram,
@@ -150,6 +158,13 @@ function buildFounderProfileData(formData: FormData): Partial<Founder> {
     openToOpportunities: formData.get('openToOpportunities') === 'on',
   }
 
+  assignOptionalString(data, formData, 'city')
+  assignOptionalString(data, formData, 'state')
+  assignOptionalString(data, formData, 'country')
+  assignOptionalString(data, formData, 'stateCode')
+  assignOptionalString(data, formData, 'cohortName')
+  assignOptionalNumber(data, formData, 'cohortYear')
+
   if (avatarUrl) {
     data.avatarUrl = avatarUrl
   }
@@ -161,9 +176,6 @@ function buildStartupData(formData: FormData): Partial<Startup> {
   const name = String(formData.get('name') || '').trim()
   const tagline = String(formData.get('tagline') || '').trim()
   const descriptionText = String(formData.get('description') || '').trim()
-  const city = String(formData.get('city') || '').trim()
-  const state = String(formData.get('state') || '').trim()
-  const country = String(formData.get('country') || '').trim()
   const industry = Number(formData.get('industry'))
   const stage = parseOptionalString(formData, 'stage')
   const fundingStatus = parseOptionalString(formData, 'fundingStatus')
@@ -185,9 +197,6 @@ function buildStartupData(formData: FormData): Partial<Startup> {
     facebook: socialLinks.facebook,
     youtube: socialLinks.youtube,
     github: socialLinks.github,
-    city: city || undefined,
-    state: state || undefined,
-    country: country || undefined,
     industry: !Number.isNaN(industry) && industry > 0 ? industry : undefined,
     stage: stage as Startup['stage'],
     teamSize,
@@ -201,6 +210,13 @@ function buildStartupData(formData: FormData): Partial<Startup> {
     isLookingForCoFounder: formData.get('isLookingForCoFounder') === 'on',
     womenLed: formData.get('womenLed') === 'on',
   }
+
+  assignOptionalString(data, formData, 'city')
+  assignOptionalString(data, formData, 'state')
+  assignOptionalString(data, formData, 'country')
+  assignOptionalString(data, formData, 'stateCode')
+  assignOptionalString(data, formData, 'cohortName')
+  assignOptionalNumber(data, formData, 'cohortYear')
 
   if (logoUrl) {
     data.logoUrl = logoUrl

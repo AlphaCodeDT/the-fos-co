@@ -268,8 +268,24 @@ export const Startups: CollectionConfig = {
       type: 'text',
     },
     {
+      name: 'stateCode',
+      type: 'text',
+      admin: {
+        description: 'ISO state code from location picker (e.g. KA).',
+      },
+    },
+    {
       name: 'country',
       type: 'text',
+      defaultValue: 'India',
+    },
+    {
+      name: 'cohortName',
+      type: 'text',
+    },
+    {
+      name: 'cohortYear',
+      type: 'number',
     },
     {
       name: 'teamSize',

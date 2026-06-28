@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { CohortBadge } from '@/components/community/CohortBadge'
 import { OpportunityBadges } from '@/components/community/OpportunityBadges'
 import { SocialLinks } from '@/components/community/SocialLinks'
 import { TrustBadge } from '@/components/community/TrustBadge'
@@ -15,6 +16,11 @@ type StartupCardProps = {
     | 'name'
     | 'slug'
     | 'tagline'
+    | 'city'
+    | 'state'
+    | 'country'
+    | 'cohortName'
+    | 'cohortYear'
     | 'womenLed'
     | 'isHiring'
     | 'isRaising'
@@ -40,6 +46,8 @@ export function StartupCard({ startup }: StartupCardProps) {
 
   const industryName =
     startup.industry && typeof startup.industry === 'object' ? startup.industry.name : null
+
+  const location = [startup.city, startup.state, startup.country].filter(Boolean).join(', ')
 
   const socialLinks = {
     linkedIn: startup.linkedIn,
@@ -77,10 +85,12 @@ export function StartupCard({ startup }: StartupCardProps) {
             {startup.tagline ? (
               <p className="line-clamp-2 text-sm text-brand-white/70">{startup.tagline}</p>
             ) : null}
+            {location ? <p className="text-xs text-brand-white/50">{location}</p> : null}
             <div className="flex flex-wrap items-center gap-2">
               {industryName ? (
                 <span className="text-xs uppercase tracking-wide text-brand-yellow">{industryName}</span>
               ) : null}
+              <CohortBadge cohortName={startup.cohortName} cohortYear={startup.cohortYear} />
               <WomenLedBadge womenLed={startup.womenLed} />
               <OpportunityBadges startup={startup} />
             </div>

@@ -46,6 +46,64 @@ test.describe('founder account flows', () => {
     await expect(page.locator('#linkedIn')).toHaveValue(linkedIn)
   })
 
+  test('sets location, cohort, and preserves location on untouched save', async ({ page }) => {
+    await loginAsPrimaryFounder(page)
+    await page.getByRole('link', { name: 'My profile' }).click()
+    await page.waitForURL(/\/account\/profile/)
+
+    await page.locator('#location-state').click()
+    await page.getByPlaceholder('Search states…').fill('Karnataka')
+    await page.getByText('Karnataka', { exact: true }).click()
+
+    await page.locator('#location-city').click()
+    await page.getByPlaceholder('Search cities…').fill('Bangalore Urban')
+    await page.getByRole('option', { name: 'Bangalore Urban' }).click()
+
+    await page.locator('#cohortName').fill('E2E Cohort')
+    await page.locator('#cohortYear').selectOption(String(new Date().getFullYear()))
+
+    await page.getByRole('button', { name: 'Save profile' }).click()
+    await expect(page.getByText('Saved')).toBeVisible({ timeout: 30_000 })
+
+    await page.reload()
+    await expect(page.locator('input[name="state"]')).toHaveValue('Karnataka')
+    await expect(page.locator('input[name="city"]')).toHaveValue('Bangalore Urban')
+    await expect(page.locator('#cohortName')).toHaveValue('E2E Cohort')
+
+    const stateBefore = await page.locator('input[name="state"]').inputValue()
+    const cityBefore = await page.locator('input[name="city"]').inputValue()
+    const countryBefore = await page.locator('input[name="country"]').inputValue()
+
+    const headline = `E2E headline only ${Date.now()}`
+    await page.locator('#headline').fill(headline)
+    await page.getByRole('button', { name: 'Save profile' }).click()
+    await expect(page.getByText('Saved')).toBeVisible({ timeout: 30_000 })
+
+    await page.reload()
+    await expect(page.locator('#headline')).toHaveValue(headline)
+    await expect(page.locator('input[name="state"]')).toHaveValue(stateBefore)
+    await expect(page.locator('input[name="city"]')).toHaveValue(cityBefore)
+    await expect(page.locator('input[name="country"]')).toHaveValue(countryBefore)
+  })
+
+  test('filters founders directory by saved state', async ({ page }) => {
+    const state = requireRunState()
+    const payload = await getBootstrapPayload()
+
+    await payload.update({
+      collection: 'founders',
+      id: state.founders.primary,
+      data: {
+        moderationStatus: 'approved',
+        verificationStatus: 'verified',
+      },
+      overrideAccess: true,
+    })
+
+    await page.goto('/founders?state=Karnataka')
+    await expect(page.getByRole('heading', { name: new RegExp(state.token) })).toBeVisible()
+  })
+
   test('uploads small and large avatars with progress UI', async ({ page }) => {
     await loginAsPrimaryFounder(page)
     await page.getByRole('link', { name: 'My profile' }).click()

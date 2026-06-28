@@ -6,6 +6,7 @@ import * as migration_20260627_052400_founder_auth_verify_columns from './202606
 import * as migration_20260627_120000_founder_startup_image_urls from './20260627_120000_founder_startup_image_urls';
 import * as migration_20260628_000000_social_links from './20260628_000000_social_links';
 import * as migration_20260628_120000_team_member_name from './20260628_120000_team_member_name';
+import * as migration_20260628_140000_location_cohort from './20260628_140000_location_cohort';
 
 export const migrations = [
   {
@@ -47,5 +48,10 @@ export const migrations = [
     up: migration_20260628_120000_team_member_name.up,
     down: migration_20260628_120000_team_member_name.down,
     name: '20260628_120000_team_member_name',
+  },
+  {
+    up: migration_20260628_140000_location_cohort.up,
+    down: migration_20260628_140000_location_cohort.down,
+    name: '20260628_140000_location_cohort',
   },
 ];

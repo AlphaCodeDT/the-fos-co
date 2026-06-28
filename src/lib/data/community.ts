@@ -3,6 +3,7 @@ import type { Founder, Startup } from '@/payload-types'
 import {
   buildFounderWhere,
   buildStartupWhere,
+  type DirectoryLocationFilters,
   type FounderFilters,
   type StartupFilters,
 } from '@/lib/community-filters'
@@ -76,6 +77,8 @@ export async function getFounders({
       city: true,
       state: true,
       country: true,
+      cohortName: true,
+      cohortYear: true,
       moderationStatus: true,
       verificationStatus: true,
       lookingForCoFounder: true,
@@ -118,6 +121,10 @@ export async function getStartups({
       logo: true,
       industry: true,
       city: true,
+      state: true,
+      country: true,
+      cohortName: true,
+      cohortYear: true,
       womenLed: true,
       isHiring: true,
       isRaising: true,
@@ -209,6 +216,58 @@ export async function getFilterOrganizations() {
     limit: 200,
     depth: 0,
   })
+}
+
+type LocationFilterCollection = 'founders' | 'startups'
+
+export async function getDirectoryLocationFilters(
+  collection: LocationFilterCollection,
+): Promise<DirectoryLocationFilters> {
+  const payload = await getPayloadClient()
+
+  const result = await payload.find({
+    collection,
+    where: approvedCommunityWhere,
+    limit: 1000,
+    depth: 0,
+    select: {
+      state: true,
+      city: true,
+      cohortYear: true,
+    },
+  })
+
+  const states = new Set<string>()
+  const citiesByState: Record<string, Set<string>> = {}
+  const cohortYears = new Set<number>()
+
+  for (const doc of result.docs) {
+    const state = typeof doc.state === 'string' ? doc.state.trim() : ''
+    const city = typeof doc.city === 'string' ? doc.city.trim() : ''
+
+    if (state) {
+      states.add(state)
+      if (city) {
+        citiesByState[state] ??= new Set<string>()
+        citiesByState[state].add(city)
+      }
+    }
+
+    if (typeof doc.cohortYear === 'number' && !Number.isNaN(doc.cohortYear)) {
+      cohortYears.add(doc.cohortYear)
+    }
+  }
+
+  return {
+    states: [...states].sort((a, b) => a.localeCompare(b)),
+    citiesByState: Object.fromEntries(
+      Object.entries(citiesByState).map(([state, cities]) => [
+        state,
+        [...cities].sort((a, b) => a.localeCompare(b)),
+      ]),
+    ),
+    cohortYears: [...cohortYears].sort((a, b) => b - a),
+  }
 }
 
 /** Sitemap — indexable only (approved + verified) */

@@ -1,12 +1,12 @@
 'use client'
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { buildDirectorySearchParams } from '@/lib/community-filters'
+import { buildDirectorySearchParams, type DirectoryLocationFilters } from '@/lib/community-filters'
 import type { Industry, Organization } from '@/payload-types'
 import { cn } from '@/lib/utils'
 
@@ -14,6 +14,7 @@ type CommunityFilterBarProps = {
   variant: 'founders' | 'startups'
   industries: Industry[]
   organizations: Organization[]
+  locationFilters: DirectoryLocationFilters
   className?: string
 }
 
@@ -25,6 +26,7 @@ export function CommunityFilterBar({
   variant,
   industries,
   organizations,
+  locationFilters,
   className,
 }: CommunityFilterBarProps) {
   const router = useRouter()
@@ -34,6 +36,17 @@ export function CommunityFilterBar({
 
   const current = new URLSearchParams(searchParams.toString())
   const basePath = pathname
+
+  const [selectedState, setSelectedState] = useState(() => getParam(current, 'state'))
+  const [selectedCity, setSelectedCity] = useState(() => getParam(current, 'city'))
+
+  useEffect(() => {
+    setSelectedState(getParam(current, 'state'))
+    setSelectedCity(getParam(current, 'city'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync when URL changes
+  }, [searchParams.toString()])
+
+  const cityOptions = selectedState ? locationFilters.citiesByState[selectedState] ?? [] : []
 
   function navigate(updates: Record<string, string | null>) {
     const href = buildDirectorySearchParams(
@@ -49,11 +62,17 @@ export function CommunityFilterBar({
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
+    const state = (formData.get('state') as string) || null
+    const city = (formData.get('city') as string) || null
+
     navigate({
       industry: (formData.get('industry') as string) || null,
       organization: (formData.get('organization') as string) || null,
       q: (formData.get('q') as string)?.trim() || null,
       verified: formData.get('verified') === 'on' ? '1' : null,
+      state,
+      city: state && city ? city : null,
+      cohort: (formData.get('cohort') as string) || null,
       ...(variant === 'startups'
         ? {
             womenLed: formData.get('womenLed') === 'on' ? '1' : null,
@@ -63,6 +82,12 @@ export function CommunityFilterBar({
           }
         : {}),
     })
+  }
+
+  function handleStateChange(event: React.ChangeEvent<HTMLSelectElement>) {
+    const nextState = event.target.value
+    setSelectedState(nextState)
+    setSelectedCity('')
   }
 
   function clearFilters() {
@@ -122,7 +147,67 @@ export function CommunityFilterBar({
           </select>
         </div>
 
-        <div className="space-y-2 md:col-span-2">
+        <div className="space-y-2">
+          <Label htmlFor="state" className="text-brand-white/80">
+            State
+          </Label>
+          <select
+            id="state"
+            name="state"
+            value={selectedState}
+            onChange={handleStateChange}
+            className={selectClassName}
+          >
+            <option value="">All states</option>
+            {locationFilters.states.map((state) => (
+              <option key={state} value={state}>
+                {state}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="city" className="text-brand-white/80">
+            City
+          </Label>
+          <select
+            id="city"
+            name="city"
+            value={selectedCity}
+            onChange={(event) => setSelectedCity(event.target.value)}
+            className={selectClassName}
+            disabled={!selectedState}
+          >
+            <option value="">All cities</option>
+            {cityOptions.map((city) => (
+              <option key={city} value={city}>
+                {city}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="cohort" className="text-brand-white/80">
+            Cohort year
+          </Label>
+          <select
+            id="cohort"
+            name="cohort"
+            defaultValue={getParam(current, 'cohort')}
+            className={selectClassName}
+          >
+            <option value="">All cohort years</option>
+            {locationFilters.cohortYears.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-2 md:col-span-2 lg:col-span-3">
           <Label htmlFor="q" className="text-brand-white/80">
             Search by name
           </Label>

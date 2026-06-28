@@ -3,6 +3,8 @@
 import { useActionState } from 'react'
 
 import { FormMessage } from '@/components/account/AccountShell'
+import { CohortFormFields } from '@/components/account/CohortFormFields'
+import { LocationSelectFields } from '@/components/account/LocationSelectFields'
 import { ImageSubmitProgress } from '@/components/account/ImageSubmitProgress'
 import { ImageUploadField } from '@/components/account/ImageUploadField'
 import { SocialLinksFormSection } from '@/components/account/SocialLinksFormSection'
@@ -124,19 +126,18 @@ export function ProfileForm({
             ))}
           </select>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="city">City</Label>
-          <Input id="city" name="city" defaultValue={founder.city || ''} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="state">State</Label>
-          <Input id="state" name="state" defaultValue={founder.state || ''} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="country">Country</Label>
-          <Input id="country" name="country" defaultValue={founder.country || ''} />
-        </div>
+        <LocationSelectFields
+          className="sm:col-span-2"
+          initialValues={{
+            country: founder.country ?? undefined,
+            state: founder.state ?? undefined,
+            city: founder.city ?? undefined,
+            stateCode: founder.stateCode ?? undefined,
+          }}
+        />
       </div>
+
+      <CohortFormFields cohortName={founder.cohortName} cohortYear={founder.cohortYear} />
 
       <SocialLinksFormSection
         values={{

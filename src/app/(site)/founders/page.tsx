@@ -9,6 +9,7 @@ import { SiteFooter } from '@/components/layout/site-chrome'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { parseFounderSearchParams } from '@/lib/community-filters'
 import {
+  getDirectoryLocationFilters,
   getFilterIndustries,
   getFilterOrganizations,
   getFounders,
@@ -33,10 +34,11 @@ export default async function FoundersDirectoryPage({ searchParams }: PageProps)
   const params = await searchParams
   const { filters, page } = parseFounderSearchParams(params)
 
-  const [foundersResult, industriesResult, organizationsResult] = await Promise.all([
+  const [foundersResult, industriesResult, organizationsResult, locationFilters] = await Promise.all([
     getFounders({ filters, page, limit: 24 }),
     getFilterIndustries(),
     getFilterOrganizations(),
+    getDirectoryLocationFilters('founders'),
   ])
 
   const { docs: founders, totalDocs, totalPages, page: currentPage } = foundersResult
@@ -58,6 +60,7 @@ export default async function FoundersDirectoryPage({ searchParams }: PageProps)
             variant="founders"
             industries={industriesResult.docs}
             organizations={organizationsResult.docs}
+            locationFilters={locationFilters}
             className="mb-8"
           />
         </Suspense>

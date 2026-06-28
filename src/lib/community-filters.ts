@@ -7,6 +7,9 @@ export type FounderFilters = {
   organizationSlug?: string
   verifiedOnly?: boolean
   query?: string
+  state?: string
+  city?: string
+  cohortYear?: number
 }
 
 export type StartupFilters = {
@@ -18,6 +21,15 @@ export type StartupFilters = {
   isRaising?: boolean
   isLookingForCoFounder?: boolean
   query?: string
+  state?: string
+  city?: string
+  cohortYear?: number
+}
+
+export type DirectoryLocationFilters = {
+  states: string[]
+  citiesByState: Record<string, string[]>
+  cohortYears: number[]
 }
 
 type SearchParams = Record<string, string | string[] | undefined>
@@ -30,6 +42,20 @@ function getParam(params: SearchParams, key: string): string | undefined {
 
 function isTruthyParam(value: string | undefined): boolean {
   return value === '1' || value === 'true'
+}
+
+function parseCohortYearParam(value: string | undefined): number | undefined {
+  if (!value || !/^\d+$/.test(value)) return undefined
+  const parsed = Number.parseInt(value, 10)
+  return Number.isNaN(parsed) ? undefined : parsed
+}
+
+function parseLocationFilters(params: SearchParams) {
+  return {
+    state: getParam(params, 'state')?.trim() || undefined,
+    city: getParam(params, 'city')?.trim() || undefined,
+    cohortYear: parseCohortYearParam(getParam(params, 'cohort')),
+  }
 }
 
 export function parseFounderSearchParams(params: SearchParams): {
@@ -45,6 +71,7 @@ export function parseFounderSearchParams(params: SearchParams): {
       organizationSlug: getParam(params, 'organization'),
       verifiedOnly: isTruthyParam(getParam(params, 'verified')),
       query: getParam(params, 'q')?.trim() || undefined,
+      ...parseLocationFilters(params),
     },
   }
 }
@@ -66,7 +93,22 @@ export function parseStartupSearchParams(params: SearchParams): {
       isRaising: isTruthyParam(getParam(params, 'raising')),
       isLookingForCoFounder: isTruthyParam(getParam(params, 'cofounder')),
       query: getParam(params, 'q')?.trim() || undefined,
+      ...parseLocationFilters(params),
     },
+  }
+}
+
+function appendLocationFilters(clauses: Where[], filters: FounderFilters | StartupFilters) {
+  if (filters.state) {
+    clauses.push({ state: { equals: filters.state } })
+  }
+
+  if (filters.city) {
+    clauses.push({ city: { equals: filters.city } })
+  }
+
+  if (filters.cohortYear) {
+    clauses.push({ cohortYear: { equals: filters.cohortYear } })
   }
 }
 
@@ -91,6 +133,8 @@ export function buildFounderWhere(
   if (filters.query) {
     clauses.push({ name: { contains: filters.query } })
   }
+
+  appendLocationFilters(clauses, filters)
 
   return clauses.length === 1 ? clauses[0] : { and: clauses }
 }
@@ -132,6 +176,8 @@ export function buildStartupWhere(
   if (filters.query) {
     clauses.push({ name: { contains: filters.query } })
   }
+
+  appendLocationFilters(clauses, filters)
 
   return clauses.length === 1 ? clauses[0] : { and: clauses }
 }

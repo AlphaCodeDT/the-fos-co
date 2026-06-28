@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 
 import { BackedBySection } from '@/components/community/BackedByList'
 import { ChipList } from '@/components/community/ChipList'
+import { CohortBadge } from '@/components/community/CohortBadge'
 import { ClaimStartupButton } from '@/components/community/ClaimStartupButton'
 import { CommunityProfileContent } from '@/components/community/CommunityProfileContent'
 import { OpportunityBadges } from '@/components/community/OpportunityBadges'
@@ -125,6 +126,7 @@ export default async function StartupProfilePage({ params }: PageProps) {
               </p>
             ) : null}
             <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <CohortBadge cohortName={startup.cohortName} cohortYear={startup.cohortYear} />
               <WomenLedBadge womenLed={startup.womenLed} />
               <OpportunityBadges startup={startup} />
             </div>

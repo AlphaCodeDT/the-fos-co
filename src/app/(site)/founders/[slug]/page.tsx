@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import { BackedBySection } from '@/components/community/BackedByList'
 import { ChipList } from '@/components/community/ChipList'
 import { CommunityProfileContent } from '@/components/community/CommunityProfileContent'
+import { CohortBadge } from '@/components/community/CohortBadge'
 import { FounderOpportunityBadges } from '@/components/community/FounderOpportunityBadges'
 import { SocialLinks } from '@/components/community/SocialLinks'
 import { TrustBadge } from '@/components/community/TrustBadge'
@@ -108,6 +109,7 @@ export default async function FounderProfilePage({ params }: PageProps) {
                 {[founder.city, founder.state, founder.country].filter(Boolean).join(', ')}
               </p>
             ) : null}
+            <CohortBadge cohortName={founder.cohortName} cohortYear={founder.cohortYear} className="mt-1" />
             <FounderOpportunityBadges founder={founder} className="pt-1" />
             {hasSocialLinks(socialLinks) ? (
               <SocialLinks links={socialLinks} className="pt-1" />

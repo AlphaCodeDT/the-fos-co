@@ -9,6 +9,7 @@ import { SiteFooter } from '@/components/layout/site-chrome'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { parseStartupSearchParams } from '@/lib/community-filters'
 import {
+  getDirectoryLocationFilters,
   getFilterIndustries,
   getFilterOrganizations,
   getStartups,
@@ -33,10 +34,11 @@ export default async function StartupsDirectoryPage({ searchParams }: PageProps)
   const params = await searchParams
   const { filters, page } = parseStartupSearchParams(params)
 
-  const [startupsResult, industriesResult, organizationsResult] = await Promise.all([
+  const [startupsResult, industriesResult, organizationsResult, locationFilters] = await Promise.all([
     getStartups({ filters, page, limit: 24 }),
     getFilterIndustries(),
     getFilterOrganizations(),
+    getDirectoryLocationFilters('startups'),
   ])
 
   const { docs: startups, totalDocs, totalPages, page: currentPage } = startupsResult
@@ -58,6 +60,7 @@ export default async function StartupsDirectoryPage({ searchParams }: PageProps)
             variant="startups"
             industries={industriesResult.docs}
             organizations={organizationsResult.docs}
+            locationFilters={locationFilters}
             className="mb-8"
           />
         </Suspense>

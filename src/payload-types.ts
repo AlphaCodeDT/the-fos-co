@@ -260,7 +260,13 @@ export interface Founder {
   gender?: ('female' | 'male' | 'non-binary' | 'prefer-not-to-say' | 'other') | null;
   city?: string | null;
   state?: string | null;
+  /**
+   * ISO state code from location picker (e.g. KA).
+   */
+  stateCode?: string | null;
   country?: string | null;
+  cohortName?: string | null;
+  cohortYear?: number | null;
   linkedIn?: string | null;
   twitter?: string | null;
   website?: string | null;
@@ -373,7 +379,13 @@ export interface Startup {
   stage?: ('idea' | 'mvp' | 'early-revenue' | 'growth' | 'scaling') | null;
   city?: string | null;
   state?: string | null;
+  /**
+   * ISO state code from location picker (e.g. KA).
+   */
+  stateCode?: string | null;
   country?: string | null;
+  cohortName?: string | null;
+  cohortYear?: number | null;
   teamSize?: number | null;
   organizations?: (number | Organization)[] | null;
   fundingStatus?: string | null;
@@ -630,7 +642,10 @@ export interface FoundersSelect<T extends boolean = true> {
   gender?: T;
   city?: T;
   state?: T;
+  stateCode?: T;
   country?: T;
+  cohortName?: T;
+  cohortYear?: T;
   linkedIn?: T;
   twitter?: T;
   website?: T;
@@ -818,7 +833,10 @@ export interface StartupsSelect<T extends boolean = true> {
   stage?: T;
   city?: T;
   state?: T;
+  stateCode?: T;
   country?: T;
+  cohortName?: T;
+  cohortYear?: T;
   teamSize?: T;
   organizations?: T;
   fundingStatus?: T;

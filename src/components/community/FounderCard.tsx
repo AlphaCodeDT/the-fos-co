@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { CohortBadge } from '@/components/community/CohortBadge'
 import { FounderOpportunityBadges } from '@/components/community/FounderOpportunityBadges'
 import { SocialLinks } from '@/components/community/SocialLinks'
 import { TrustBadge } from '@/components/community/TrustBadge'
@@ -11,7 +12,7 @@ import type { Founder, Media } from '@/payload-types'
 type FounderCardProps = {
   founder: Pick<
     Founder,
-    'name' | 'slug' | 'headline' | 'city' | 'state' | 'country' | 'moderationStatus' | 'verificationStatus' | 'avatarUrl'
+    'name' | 'slug' | 'headline' | 'city' | 'state' | 'country' | 'cohortName' | 'cohortYear' | 'moderationStatus' | 'verificationStatus' | 'avatarUrl'
     | 'lookingForCoFounder' | 'openToOpportunities'
     | 'linkedIn' | 'twitter' | 'instagram' | 'facebook' | 'youtube' | 'github' | 'website'
   > & {
@@ -67,6 +68,7 @@ export function FounderCard({ founder }: FounderCardProps) {
               <p className="line-clamp-2 text-sm text-brand-white/70">{founder.headline}</p>
             ) : null}
             {location ? <p className="text-xs text-brand-white/50">{location}</p> : null}
+            <CohortBadge cohortName={founder.cohortName} cohortYear={founder.cohortYear} />
             <FounderOpportunityBadges founder={founder} />
             {hasSocialLinks(socialLinks) ? (
               <SocialLinks links={socialLinks} limit={3} iconClassName="h-7 w-7" />
