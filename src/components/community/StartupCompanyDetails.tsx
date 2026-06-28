@@ -1,13 +1,17 @@
 import type { ReactNode } from 'react'
 
 import type { Startup } from '@/payload-types'
+import { formatStartupStage } from '@/lib/startup-stage'
 
 type StartupCompanyDetailsProps = {
-  startup: Pick<Startup, 'foundedYear' | 'teamSize' | 'fundingStatus'>
+  startup: Pick<Startup, 'stage' | 'foundedYear' | 'teamSize' | 'fundingStatus'>
 }
 
 export function StartupCompanyDetails({ startup }: StartupCompanyDetailsProps) {
   const details: Array<{ label: string; value: ReactNode }> = []
+
+  const stage = formatStartupStage(startup.stage)
+  if (stage) details.push({ label: 'Stage', value: stage })
 
   if (startup.foundedYear) {
     details.push({ label: 'Founded', value: String(startup.foundedYear) })
