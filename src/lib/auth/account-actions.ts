@@ -131,13 +131,14 @@ function parseOpportunityRows(formData: FormData): Startup['opportunities'] {
     if (!type || !title) continue
 
     const description = String(formData.get(`opportunities[${index}].description`) || '').trim()
-    const link = String(formData.get(`opportunities[${index}].link`) || '').trim()
+    const rawLink = String(formData.get(`opportunities[${index}].link`) || '').trim()
+    const link = rawLink ? normalizeSocialUrl(rawLink) : undefined
 
     rows.push({
       type: String(type) as OpportunityType,
       title,
       description: description || undefined,
-      link: link || undefined,
+      link,
     })
   }
 

@@ -4,11 +4,15 @@ import type { Startup } from '@/payload-types'
 import { formatStartupStage } from '@/lib/startup-stage'
 
 type StartupCompanyDetailsProps = {
-  startup: Pick<Startup, 'stage' | 'foundedYear' | 'teamSize' | 'fundingStatus'>
+  startup: Pick<Startup, 'stage' | 'foundedYear' | 'teamSize' | 'fundingStatus' | 'industry'>
 }
 
 export function StartupCompanyDetails({ startup }: StartupCompanyDetailsProps) {
   const details: Array<{ label: string; value: ReactNode }> = []
+
+  const industryName =
+    startup.industry && typeof startup.industry === 'object' ? startup.industry.name : null
+  if (industryName) details.push({ label: 'Industry', value: industryName })
 
   const stage = formatStartupStage(startup.stage)
   if (stage) details.push({ label: 'Stage', value: stage })

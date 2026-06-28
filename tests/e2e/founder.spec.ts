@@ -204,6 +204,10 @@ test.describe('founder account flows', () => {
     await expect(page.locator('#team-member-0')).toHaveValue(new RegExp('E2E__'))
     await expect(page.getByLabel('Primary contact').first()).toBeChecked()
 
+    await page.getByRole('button', { name: 'Add opportunity' }).click()
+    await page.locator('#opportunity-title-0').fill('E2E Engineer')
+    await page.locator('#opportunity-link-0').fill('https://example.com/apply')
+
     await page.getByRole('button', { name: 'Create startup' }).click()
     await expect(page.getByText(/pending review/i)).toBeVisible({ timeout: 60_000 })
     await page.goto('/account/startups')

@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { GroupedBackedBySection } from '@/components/community/GroupedBackedBySection'
-import { ChipList } from '@/components/community/ChipList'
 import { CohortBadge } from '@/components/community/CohortBadge'
 import { ClaimStartupButton } from '@/components/community/ClaimStartupButton'
 import { CommunityProfileContent } from '@/components/community/CommunityProfileContent'
@@ -137,30 +136,20 @@ export default async function StartupProfilePage({ params }: PageProps) {
           </div>
         </div>
 
-        {startup.industry || startup.organizations?.length ? (
-          <div className="mt-8 space-y-4">
-            {startup.industry ? (
-              <div>
-                <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-yellow">
-                  Industry
-                </h2>
-                <ChipList items={[startup.industry]} />
-              </div>
-            ) : null}
-            {startup.organizations?.length ? (
-              <GroupedBackedBySection organizations={startup.organizations} />
-            ) : null}
-          </div>
-        ) : null}
-
-        <StartupCompanyDetails startup={startup} />
-
         {startup.description ? (
           <div className="mt-10 border-t border-brand-white/10 pt-8">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-brand-yellow">About</h2>
             <div className="mt-3">
               <CommunityProfileContent content={startup.description} />
             </div>
+          </div>
+        ) : null}
+
+        <StartupCompanyDetails startup={startup} />
+
+        {startup.organizations?.length ? (
+          <div className="mt-10 border-t border-brand-white/10 pt-8">
+            <GroupedBackedBySection organizations={startup.organizations} />
           </div>
         ) : null}
 

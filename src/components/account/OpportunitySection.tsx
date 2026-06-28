@@ -102,6 +102,7 @@ export function OpportunitySection({ opportunities }: { opportunities?: Startup[
             <Input
               id={`opportunity-link-${index}`}
               name={`opportunities[${index}].link`}
+              placeholder="https://…"
               value={row.link}
               onChange={(event) => {
                 const link = event.target.value
