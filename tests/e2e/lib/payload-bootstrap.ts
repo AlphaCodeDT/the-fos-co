@@ -1,13 +1,16 @@
 import type { Payload } from 'payload'
 
+import { APP_TIMEZONE, getToday } from '../../../src/lib/data/programs'
 import { getPayloadClient } from '../../../src/lib/payload'
-import type { Founder, Organization, Startup } from '../../../src/payload-types'
+import type { Founder, Organization, Program, Startup } from '../../../src/payload-types'
 
 import {
   e2eFounderEmail,
   e2eFounderName,
   e2eOrgName,
   e2eOrgSlug,
+  e2eProgramName,
+  e2eProgramSlug,
   e2eStartupName,
 } from './constants'
 import { richText } from './rich-text'
@@ -75,6 +78,101 @@ export async function createE2eFounder({
   }
 
   return created
+}
+
+const istDateFormatter = new Intl.DateTimeFormat('en-CA', {
+  timeZone: APP_TIMEZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+
+function addDaysToIstCalendar(days: number): string {
+  const today = getToday()
+  const anchor = new Date(`${today}T12:00:00+05:30`)
+  anchor.setDate(anchor.getDate() + days)
+  return istDateFormatter.format(anchor)
+}
+
+function toPayloadDate(dateOnly: string): string {
+  return `${dateOnly}T00:00:00.000Z`
+}
+
+export async function createE2eProgram({
+  payload,
+  token,
+  label,
+  organizationId,
+  status = 'published',
+  startDate,
+  endDate,
+  applicationUrl,
+}: {
+  payload: Payload
+  token: string
+  label: string
+  organizationId: number
+  status?: Program['status']
+  startDate?: string
+  endDate?: string
+  applicationUrl?: string
+}): Promise<Program> {
+  const suffix = label.toLowerCase().replace(/\s+/g, '-')
+
+  return (await payload.create({
+    collection: 'programs',
+    data: {
+      name: e2eProgramName(token, label),
+      slug: e2eProgramSlug(token, suffix),
+      organization: organizationId,
+      status,
+      startDate,
+      endDate,
+      applicationUrl,
+      description: `E2E program (${label}) for Playwright tests.`,
+    },
+    overrideAccess: true,
+  })) as Program
+}
+
+export async function createE2eUpcomingProgram({
+  payload,
+  token,
+  organizationId,
+}: {
+  payload: Payload
+  token: string
+  organizationId: number
+}): Promise<Program> {
+  return createE2eProgram({
+    payload,
+    token,
+    label: 'Upcoming',
+    organizationId,
+    status: 'published',
+    startDate: toPayloadDate(addDaysToIstCalendar(30)),
+    endDate: toPayloadDate(addDaysToIstCalendar(90)),
+    applicationUrl: 'https://example.com/apply-program',
+  })
+}
+
+export async function createE2ePastProgram({
+  payload,
+  token,
+  organizationId,
+}: {
+  payload: Payload
+  token: string
+  organizationId: number
+}): Promise<Program> {
+  return createE2eProgram({
+    payload,
+    token,
+    label: 'Past',
+    organizationId,
+    status: 'published',
+    endDate: toPayloadDate(addDaysToIstCalendar(-30)),
+  })
 }
 
 export async function createE2eClaimableStartup({
@@ -271,7 +369,7 @@ export async function auditNoLeftoverE2eRows(
   payload: Payload,
   token: string,
 ): Promise<void> {
-  const [founders, startups, organizations] = await Promise.all([
+  const [founders, startups, organizations, programs] = await Promise.all([
     payload.find({
       collection: 'founders',
       where: { name: { contains: token } },
@@ -290,19 +388,30 @@ export async function auditNoLeftoverE2eRows(
       limit: 10,
       overrideAccess: true,
     }),
+    payload.find({
+      collection: 'programs',
+      where: { slug: { contains: 'e2e-prog' } },
+      limit: 10,
+      overrideAccess: true,
+    }),
   ])
 
   const orgLeftover = (organizations.docs as Organization[]).filter(
     (doc) => doc.slug.includes(token) || doc.name.includes(token),
   )
 
-  const leftover = founders.totalDocs + startups.totalDocs + orgLeftover.length
+  const programLeftover = (programs.docs as Program[]).filter(
+    (doc) => doc.slug.includes(token) || doc.name.includes(token),
+  )
+
+  const leftover = founders.totalDocs + startups.totalDocs + orgLeftover.length + programLeftover.length
 
   if (leftover > 0) {
     const names = [
       ...founders.docs.map((doc) => `founder:${(doc as Founder).name}`),
       ...startups.docs.map((doc) => `startup:${(doc as Startup).name}`),
       ...orgLeftover.map((doc) => `organization:${doc.name}`),
+      ...programLeftover.map((doc) => `program:${doc.name}`),
     ]
     throw new Error(`E2E teardown audit failed: ${leftover} leftover row(s): ${names.join(', ')}`)
   }

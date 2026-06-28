@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { requireRunState } from './lib/auth'
-import { e2eFounderName, e2eOrgName, e2eOrgSlug, e2eStartupName } from './lib/constants'
+import { e2eFounderName, e2eOrgName, e2eOrgSlug, e2eProgramName, e2eStartupName } from './lib/constants'
 import { requireE2eProdGuard } from './lib/guards'
 import { getBootstrapPayload } from './lib/payload-bootstrap'
 
@@ -23,6 +23,18 @@ test.describe('organization public pages', () => {
     await expect(page.getByRole('heading', { name: e2eOrgName(state.token) })).toBeVisible()
     await expect(page.getByRole('link', { name: founderName })).toBeVisible()
     await expect(page.getByRole('link', { name: startupName })).toBeVisible()
+  })
+
+  test('lists upcoming programs and excludes past programs on org profile', async ({ page }) => {
+    const state = requireRunState()
+    const orgSlug = e2eOrgSlug(state.token)
+    const upcomingName = e2eProgramName(state.token, 'Upcoming')
+    const pastName = e2eProgramName(state.token, 'Past')
+
+    await page.goto(`/organizations/${orgSlug}`)
+    await expect(page.getByRole('heading', { name: 'Cohorts & Programs' })).toBeVisible()
+    await expect(page.getByText(upcomingName)).toBeVisible()
+    await expect(page.getByText(pastName)).not.toBeVisible()
   })
 
   test('returns 404 for draft organization', async ({ page }) => {

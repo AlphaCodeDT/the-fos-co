@@ -1,3 +1,15 @@
+export function isHttpOrHttpsUrl(raw?: string | null): boolean {
+  const trimmed = raw?.trim()
+  if (!trimmed) return false
+
+  try {
+    const parsed = new URL(trimmed)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
 export function getServerURL(): string {
   return process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 }

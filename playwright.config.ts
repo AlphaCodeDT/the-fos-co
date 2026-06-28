@@ -30,9 +30,14 @@ export default defineConfig({
       testMatch: 'organizations.spec.ts',
     },
     {
+      name: 'programs',
+      testMatch: 'programs.spec.ts',
+      dependencies: ['organizations'],
+    },
+    {
       name: 'founder',
       testMatch: 'founder.spec.ts',
-      dependencies: ['organizations'],
+      dependencies: ['programs'],
     },
     {
       name: 'admin',

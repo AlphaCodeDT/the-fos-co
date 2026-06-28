@@ -3,6 +3,7 @@ import { Founders } from '@/collections/Founders'
 import { Industries } from '@/collections/Industries'
 import { Media } from '@/collections/Media'
 import { Organizations } from '@/collections/Organizations'
+import { Programs } from '@/collections/Programs'
 import { Startups } from '@/collections/Startups'
 import { Stories } from '@/collections/Stories'
 import { Tags } from '@/collections/Tags'
@@ -17,5 +18,6 @@ export const collections = [
   Tags,
   Industries,
   Organizations,
+  Programs,
   Startups,
 ]

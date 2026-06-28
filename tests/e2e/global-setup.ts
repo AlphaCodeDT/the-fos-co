@@ -9,6 +9,8 @@ import {
   createE2eFounder,
   createE2eOrganization,
   createE2eOrgLinkedStartup,
+  createE2ePastProgram,
+  createE2eUpcomingProgram,
   getBootstrapPayload,
   getFirstIndustryId,
   linkFounderToOrganizations,
@@ -112,6 +114,18 @@ export default async function globalSetup(): Promise<void> {
     organizationId: publishedOrg.id,
   })
 
+  const upcomingProgram = await createE2eUpcomingProgram({
+    payload,
+    token,
+    organizationId: publishedOrg.id,
+  })
+
+  const pastProgram = await createE2ePastProgram({
+    payload,
+    token,
+    organizationId: publishedOrg.id,
+  })
+
   const adminEmail = process.env.ADMIN_EMAIL
   if (adminEmail) {
     const admin = await payload.find({
@@ -143,10 +157,15 @@ export default async function globalSetup(): Promise<void> {
       published: publishedOrg.id,
       draft: draftOrg.id,
     },
+    programs: {
+      upcoming: upcomingProgram.id,
+      past: pastProgram.id,
+    },
     createdIds: {
       founders: [],
       startups: [],
       organizations: [],
+      programs: [],
       media: [],
     },
     storagePrefix: `e2e/${token}`,

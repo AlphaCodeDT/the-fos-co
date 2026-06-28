@@ -1,4 +1,4 @@
-import type { Founder, Organization, Startup } from '../../../src/payload-types'
+import type { Founder, Organization, Program, Startup } from '../../../src/payload-types'
 
 import { E2E_STABLE_PREFIX } from './constants'
 
@@ -56,5 +56,19 @@ export function assertE2eOrganization(
 
   if (!doc.name.includes(token) && !doc.slug.includes(token)) {
     throw new Error(`Refusing delete: organization lacks run token (${doc.name} / ${doc.slug}).`)
+  }
+}
+
+export function assertE2eProgram(doc: Pick<Program, 'name' | 'slug'>, token: string): void {
+  if (!doc.name?.startsWith(E2E_STABLE_PREFIX)) {
+    throw new Error(`Refusing delete: program name lacks E2E__ marker (${doc.name}).`)
+  }
+
+  if (!doc.slug?.startsWith('e2e-prog')) {
+    throw new Error(`Refusing delete: program slug lacks e2e-prog prefix (${doc.slug}).`)
+  }
+
+  if (!doc.name.includes(token) && !doc.slug.includes(token)) {
+    throw new Error(`Refusing delete: program lacks run token (${doc.name} / ${doc.slug}).`)
   }
 }

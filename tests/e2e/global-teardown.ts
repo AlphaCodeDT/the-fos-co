@@ -4,9 +4,15 @@ import dotenv from 'dotenv'
 import { unlinkSync } from 'fs'
 
 import { createSupabaseServiceClient } from '../../src/lib/supabase/server'
-import type { Founder, Organization, Startup } from '../../src/payload-types'
+import type { Founder, Organization, Program, Startup } from '../../src/payload-types'
 
-import { assertDeleteBatch, assertE2eFounder, assertE2eOrganization, assertE2eStartup } from './lib/guards'
+import {
+  assertDeleteBatch,
+  assertE2eFounder,
+  assertE2eOrganization,
+  assertE2eProgram,
+  assertE2eStartup,
+} from './lib/guards'
 import { auditNoLeftoverE2eRows, getBootstrapPayload } from './lib/payload-bootstrap'
 import { collectAllIds, readRunState, RUN_STATE_PATH } from './lib/run-state'
 
@@ -55,6 +61,9 @@ export default async function globalTeardown(): Promise<void> {
 
   assertDeleteBatch(ids.startups, 'startup')
   assertDeleteBatch(ids.founders, 'founder')
+  if (ids.programs.length > 0) {
+    assertDeleteBatch(ids.programs, 'program')
+  }
   if (ids.organizations.length > 0) {
     assertDeleteBatch(ids.organizations, 'organization')
   }
@@ -111,6 +120,28 @@ export default async function globalTeardown(): Promise<void> {
     await payload.delete({
       collection: 'founders',
       id: founderId,
+      overrideAccess: true,
+    })
+  }
+
+  for (const programId of ids.programs) {
+    let doc: Program
+    try {
+      doc = (await payload.findByID({
+        collection: 'programs',
+        id: programId,
+        overrideAccess: true,
+      })) as Program
+    } catch {
+      console.warn(`[e2e] Program ${programId} not found during teardown; skipping.`)
+      continue
+    }
+
+    assertE2eProgram(doc, token)
+
+    await payload.delete({
+      collection: 'programs',
+      id: programId,
       overrideAccess: true,
     })
   }

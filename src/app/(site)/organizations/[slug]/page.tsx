@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { FounderCard } from '@/components/community/FounderCard'
+import { ProgramCard } from '@/components/community/ProgramCard'
 import { StartupCard } from '@/components/community/StartupCard'
 import { SiteFooter } from '@/components/layout/site-chrome'
 import { SiteHeader } from '@/components/layout/SiteHeader'
@@ -12,6 +13,7 @@ import {
   getOrganizationBySlug,
   getStartupsForOrganization,
 } from '@/lib/data/community'
+import { getUpcomingProgramsForOrganization } from '@/lib/data/programs'
 import { resolveOrganizationLogoUrl } from '@/lib/media-image'
 import { formatOrgTypeLabel } from '@/lib/organization-types'
 import { formatPageTitle } from '@/lib/site'
@@ -49,9 +51,10 @@ export default async function OrganizationProfilePage({ params }: PageProps) {
 
   if (!organization) notFound()
 
-  const [foundersResult, startupsResult] = await Promise.all([
+  const [foundersResult, startupsResult, programs] = await Promise.all([
     getFoundersForOrganization(organization.id),
     getStartupsForOrganization(organization.id),
+    getUpcomingProgramsForOrganization(organization.id),
   ])
 
   const logoUrl = resolveOrganizationLogoUrl(organization)
@@ -126,11 +129,19 @@ export default async function OrganizationProfilePage({ params }: PageProps) {
           </section>
         ) : null}
 
-        <section className="mt-12 rounded-2xl border border-dashed border-brand-white/15 bg-brand-black/40 p-6">
+        <section className="mt-12">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-brand-yellow">
             Cohorts &amp; Programs
           </h2>
-          <p className="mt-2 text-sm text-brand-white/50">Coming soon.</p>
+          {programs.length > 0 ? (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              {programs.map((program) => (
+                <ProgramCard key={program.id} program={program} variant="compact" />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-2 text-sm text-brand-white/50">No upcoming programs.</p>
+          )}
         </section>
       </main>
       <SiteFooter />

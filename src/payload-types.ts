@@ -76,6 +76,7 @@ export interface Config {
     tags: Tag;
     industries: Industry;
     organizations: Organization;
+    programs: Program;
     startups: Startup;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -92,6 +93,7 @@ export interface Config {
     tags: TagsSelect<false> | TagsSelect<true>;
     industries: IndustriesSelect<false> | IndustriesSelect<true>;
     organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
+    programs: ProgramsSelect<false> | ProgramsSelect<true>;
     startups: StartupsSelect<false> | StartupsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -505,6 +507,27 @@ export interface Tag {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "programs".
+ */
+export interface Program {
+  id: number;
+  name: string;
+  slug: string;
+  organization: number | Organization;
+  description?: string | null;
+  cohort?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  applicationDeadline?: string | null;
+  applicationUrl?: string | null;
+  mode?: ('online' | 'in-person' | 'hybrid') | null;
+  location?: string | null;
+  status: 'draft' | 'published';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -558,6 +581,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'organizations';
         value: number | Organization;
+      } | null)
+    | ({
+        relationTo: 'programs';
+        value: number | Program;
       } | null)
     | ({
         relationTo: 'startups';
@@ -824,6 +851,26 @@ export interface OrganizationsSelect<T extends boolean = true> {
   description?: T;
   logo?: T;
   parentOrganization?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "programs_select".
+ */
+export interface ProgramsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  organization?: T;
+  description?: T;
+  cohort?: T;
+  startDate?: T;
+  endDate?: T;
+  applicationDeadline?: T;
+  applicationUrl?: T;
+  mode?: T;
+  location?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

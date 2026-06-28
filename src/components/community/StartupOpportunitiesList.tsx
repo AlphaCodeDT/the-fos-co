@@ -1,5 +1,6 @@
 import { OPPORTUNITY_TYPE_OPTIONS } from '@/components/account/startup-form-constants'
 import { Button } from '@/components/ui/button'
+import { isHttpOrHttpsUrl } from '@/lib/url'
 import type { Startup } from '@/payload-types'
 
 type StartupOpportunitiesListProps = {
@@ -8,18 +9,6 @@ type StartupOpportunitiesListProps = {
 
 function formatOpportunityType(type: NonNullable<Startup['opportunities']>[number]['type']): string {
   return OPPORTUNITY_TYPE_OPTIONS.find((option) => option.value === type)?.label || type
-}
-
-function isHttpOrHttpsUrl(raw?: string | null): boolean {
-  const trimmed = raw?.trim()
-  if (!trimmed) return false
-
-  try {
-    const parsed = new URL(trimmed)
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
-  } catch {
-    return false
-  }
 }
 
 export function StartupOpportunitiesList({ opportunities }: StartupOpportunitiesListProps) {

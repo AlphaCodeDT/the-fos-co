@@ -16,10 +16,15 @@ export type RunState = {
     published: number
     draft: number
   }
+  programs: {
+    upcoming: number
+    past: number
+  }
   createdIds: {
     founders: number[]
     startups: number[]
     organizations: number[]
+    programs: number[]
     media: number[]
   }
   storagePrefix: string
@@ -62,6 +67,7 @@ export function collectAllIds(state: RunState): {
   founders: number[]
   startups: number[]
   organizations: number[]
+  programs: number[]
   media: number[]
 } {
   const founders = [
@@ -79,12 +85,18 @@ export function collectAllIds(state: RunState): {
     state.organizations.draft,
     ...state.createdIds.organizations,
   ]
+  const programs = [
+    state.programs.upcoming,
+    state.programs.past,
+    ...state.createdIds.programs,
+  ]
   const media = [...state.createdIds.media]
 
   return {
     founders: [...new Set(founders)],
     startups: [...new Set(startups)],
     organizations: [...new Set(organizations)],
+    programs: [...new Set(programs)],
     media: [...new Set(media)],
   }
 }
