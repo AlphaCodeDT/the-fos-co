@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "build": "next build",
-    "ci": "cross-env NODE_OPTIONS=--no-deprecation payload migrate && next build",
+    "migrate": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/migrate.ts",
+    "ci": "npm run migrate && next build",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "lint": "eslint",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",

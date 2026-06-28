@@ -63,20 +63,22 @@ cp .env.example .env
 
 Fill in:
 
-- `DATABASE_URL` — Supabase Postgres: **`:6543` transaction pooler** for runtime (local dev + Vercel); use **`:5432` direct** only when running migrations (see below)
+- `DATABASE_URL` — Supabase Postgres **transaction pooler (`:6543`)** for runtime (local dev + Vercel)
+- `DATABASE_URI_SESSION` — Supabase **direct (`:5432`)** for migrations only (required on Vercel when `DATABASE_URL` is pooled)
 - `PAYLOAD_SECRET` — long random string
 - `NEXT_PUBLIC_SERVER_URL` — e.g. `http://localhost:3000` (production: your Vercel URL)
 - S3 vars — optional locally (media falls back to disk); required for production media on Supabase/R2
 
 ### 3. Database migrations
 
-**Production uses migrations only** (`push: false`). Migrations require a **session-capable** connection — use Supabase **direct `:5432`**, not the transaction pooler (`:6543`).
+**Production uses migrations only** (`push: false`). Migrations require a **session-capable** connection — Supabase **direct `:5432`**, not the transaction pooler (`:6543`).
 
-**Workflow:** migrate locally → push code → Vercel builds (no migrate on deploy).
+**Local:** if `DATABASE_URL` already points at `:5432`, `npm run migrate` works without `DATABASE_URI_SESSION`. For pooler parity locally, set both URLs like production.
+
+**Deploy:** Vercel runs `npm run ci` (`migrate` then `build`). `npm run migrate` uses `DATABASE_URI_SESSION`; runtime keeps `DATABASE_URL` on `:6543`.
 
 ```bash
-# Point DATABASE_URL at :5432 in .env, then:
-npm run payload migrate
+npm run migrate
 ```
 
 Create a new migration after schema changes:
@@ -108,18 +110,19 @@ npm run dev
 
 ### 6. Production (Vercel)
 
-`vercel.json` sets **build-only** (`npm run build`). Do **not** run `payload migrate` on Vercel — the transaction pooler (`:6543`) cannot run migrations safely.
+`vercel.json` sets **`npm run ci`** — migrations on the session connection, then `next build`. Runtime queries use `DATABASE_URL` (`:6543` pooler).
 
 **Vercel env vars:**
 
 | Variable | Value |
 |----------|--------|
 | `DATABASE_URL` | Transaction pooler, port **6543** |
+| `DATABASE_URI_SESSION` | Direct / session pooler, port **5432** (migrations at build time) |
 | `PAYLOAD_SECRET` | Same secret as local |
 | `NEXT_PUBLIC_SERVER_URL` | Your production URL |
 | S3 vars | Supabase Storage (or R2) credentials |
 
-If the Vercel dashboard has **Build Command** overridden, set it to `npm run build` or turn the override off so `vercel.json` applies.
+If the Vercel dashboard has **Build Command** overridden, set it to `npm run ci` or turn the override off so `vercel.json` applies.
 
 ## Public visibility rules
 
@@ -140,8 +143,9 @@ Two independent trust layers:
 | Command | Purpose |
 |---------|---------|
 | `npm run dev` | Next.js dev server |
-| `npm run build` | Production build |
-| `npm run ci` | Migrate + build (local/CI only — not Vercel) |
+| `npm run build` | Production build (no migrate) |
+| `npm run migrate` | Apply pending Payload migrations (`DATABASE_URI_SESSION` or direct `DATABASE_URL`) |
+| `npm run ci` | Migrate + build (Vercel deploy) |
 | `npm run payload` | Payload CLI |
 | `npm run seed` | Seed database |
 | `npm run generate:types` | Regenerate `payload-types.ts` |

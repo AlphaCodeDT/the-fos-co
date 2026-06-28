@@ -317,12 +317,12 @@ test.describe('founder account flows', () => {
     await expect(page.getByText(orgChipLabel)).toBeVisible()
 
     await page.getByRole('button', { name: `Remove ${orgName}` }).click()
-    await expect(page.getByText(orgChipLabel)).not.toBeVisible()
+    await expect(page.getByText(orgChipLabel)).toHaveCount(0)
 
     await page.getByRole('button', { name: 'Save profile' }).click()
     await expect(page.getByText('Saved')).toBeVisible({ timeout: 30_000 })
 
     await page.reload()
-    await expect(page.getByText(orgChipLabel)).not.toBeVisible()
+    await expect(page.getByText(orgChipLabel)).toHaveCount(0)
   })
 })
