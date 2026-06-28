@@ -164,6 +164,22 @@ export const Founders: CollectionConfig = {
       type: 'text',
     },
     {
+      name: 'instagram',
+      type: 'text',
+    },
+    {
+      name: 'facebook',
+      type: 'text',
+    },
+    {
+      name: 'youtube',
+      type: 'text',
+    },
+    {
+      name: 'github',
+      type: 'text',
+    },
+    {
       name: 'industries',
       type: 'relationship',
       relationTo: 'industries',

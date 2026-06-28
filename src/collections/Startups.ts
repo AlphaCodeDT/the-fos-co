@@ -206,6 +206,30 @@ export const Startups: CollectionConfig = {
       type: 'text',
     },
     {
+      name: 'linkedIn',
+      type: 'text',
+    },
+    {
+      name: 'twitter',
+      type: 'text',
+    },
+    {
+      name: 'instagram',
+      type: 'text',
+    },
+    {
+      name: 'facebook',
+      type: 'text',
+    },
+    {
+      name: 'youtube',
+      type: 'text',
+    },
+    {
+      name: 'github',
+      type: 'text',
+    },
+    {
       name: 'industry',
       type: 'relationship',
       relationTo: 'industries',

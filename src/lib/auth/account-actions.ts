@@ -3,6 +3,8 @@
 import { getCurrentFounder } from '@/lib/auth/founder'
 import { plainTextToLexical } from '@/lib/richtext'
 import { getPayloadClient } from '@/lib/payload'
+import { SOCIAL_LINK_FIELDS, type SocialLinkField } from '@/lib/social-links'
+import { normalizeSocialUrl } from '@/lib/social-url'
 import type { Founder, Startup } from '@/payload-types'
 
 export type AccountActionState = {
@@ -36,6 +38,22 @@ function parseOptionalNumber(formData: FormData, key: string): number | undefine
   if (!raw) return undefined
   const value = Number(raw)
   return Number.isNaN(value) ? undefined : value
+}
+
+function parseOptionalUrl(formData: FormData, key: string): string | undefined {
+  const raw = String(formData.get(key) || '').trim()
+  if (!raw) return undefined
+  return normalizeSocialUrl(raw)
+}
+
+function parseSocialLinks(formData: FormData): Partial<Record<SocialLinkField, string | undefined>> {
+  const links: Partial<Record<SocialLinkField, string | undefined>> = {}
+
+  for (const field of SOCIAL_LINK_FIELDS) {
+    links[field] = parseOptionalUrl(formData, field)
+  }
+
+  return links
 }
 
 function parseTeamRows(formData: FormData): Startup['team'] {
@@ -98,11 +116,9 @@ function buildFounderProfileData(formData: FormData): Partial<Founder> {
   const city = String(formData.get('city') || '').trim()
   const state = String(formData.get('state') || '').trim()
   const country = String(formData.get('country') || '').trim()
-  const linkedIn = String(formData.get('linkedIn') || '').trim()
-  const twitter = String(formData.get('twitter') || '').trim()
-  const website = String(formData.get('website') || '').trim()
   const gender = parseOptionalString(formData, 'gender')
   const avatarUrl = parseOptionalString(formData, 'avatarUrl')
+  const socialLinks = parseSocialLinks(formData)
 
   const data: Partial<Founder> = {
     name,
@@ -111,9 +127,13 @@ function buildFounderProfileData(formData: FormData): Partial<Founder> {
     city: city || undefined,
     state: state || undefined,
     country: country || undefined,
-    linkedIn: linkedIn || undefined,
-    twitter: twitter || undefined,
-    website: website || undefined,
+    linkedIn: socialLinks.linkedIn,
+    twitter: socialLinks.twitter,
+    instagram: socialLinks.instagram,
+    facebook: socialLinks.facebook,
+    youtube: socialLinks.youtube,
+    github: socialLinks.github,
+    website: socialLinks.website,
     gender: gender as Founder['gender'],
     industries: parseIdList(formData, 'industries'),
     organizations: parseIdList(formData, 'organizations'),
@@ -132,7 +152,6 @@ function buildStartupData(formData: FormData): Partial<Startup> {
   const name = String(formData.get('name') || '').trim()
   const tagline = String(formData.get('tagline') || '').trim()
   const descriptionText = String(formData.get('description') || '').trim()
-  const website = String(formData.get('website') || '').trim()
   const city = String(formData.get('city') || '').trim()
   const state = String(formData.get('state') || '').trim()
   const country = String(formData.get('country') || '').trim()
@@ -142,6 +161,7 @@ function buildStartupData(formData: FormData): Partial<Startup> {
   const teamSize = parseOptionalNumber(formData, 'teamSize')
   const foundedYear = parseOptionalNumber(formData, 'foundedYear')
   const logoUrl = parseOptionalString(formData, 'logoUrl')
+  const socialLinks = parseSocialLinks(formData)
 
   const data: Partial<Startup> = {
     name,
@@ -149,7 +169,13 @@ function buildStartupData(formData: FormData): Partial<Startup> {
     description: descriptionText
       ? (plainTextToLexical(descriptionText) as Startup['description'])
       : undefined,
-    website: website || undefined,
+    website: socialLinks.website,
+    linkedIn: socialLinks.linkedIn,
+    twitter: socialLinks.twitter,
+    instagram: socialLinks.instagram,
+    facebook: socialLinks.facebook,
+    youtube: socialLinks.youtube,
+    github: socialLinks.github,
     city: city || undefined,
     state: state || undefined,
     country: country || undefined,

@@ -2,8 +2,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { OpportunityBadges } from '@/components/community/OpportunityBadges'
+import { SocialLinks } from '@/components/community/SocialLinks'
 import { TrustBadge } from '@/components/community/TrustBadge'
+import { WomenLedBadge } from '@/components/community/WomenLedBadge'
 import { resolveStartupLogoUrl } from '@/lib/media-image'
+import { hasSocialLinks } from '@/lib/social-links'
 import type { Industry, Media, Startup } from '@/payload-types'
 
 type StartupCardProps = {
@@ -19,6 +22,13 @@ type StartupCardProps = {
     | 'moderationStatus'
     | 'verificationStatus'
     | 'logoUrl'
+    | 'linkedIn'
+    | 'twitter'
+    | 'instagram'
+    | 'facebook'
+    | 'youtube'
+    | 'github'
+    | 'website'
   > & {
     logo?: Media | number | null
     industry?: Industry | number | null
@@ -30,6 +40,16 @@ export function StartupCard({ startup }: StartupCardProps) {
 
   const industryName =
     startup.industry && typeof startup.industry === 'object' ? startup.industry.name : null
+
+  const socialLinks = {
+    linkedIn: startup.linkedIn,
+    twitter: startup.twitter,
+    instagram: startup.instagram,
+    facebook: startup.facebook,
+    youtube: startup.youtube,
+    github: startup.github,
+    website: startup.website,
+  }
 
   return (
     <article className="group overflow-hidden rounded-2xl border border-brand-white/10 bg-brand-black/60">
@@ -61,8 +81,12 @@ export function StartupCard({ startup }: StartupCardProps) {
               {industryName ? (
                 <span className="text-xs uppercase tracking-wide text-brand-yellow">{industryName}</span>
               ) : null}
+              <WomenLedBadge womenLed={startup.womenLed} />
               <OpportunityBadges startup={startup} />
             </div>
+            {hasSocialLinks(socialLinks) ? (
+              <SocialLinks links={socialLinks} limit={3} iconClassName="h-7 w-7" />
+            ) : null}
           </div>
         </div>
       </Link>

@@ -1,14 +1,19 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { FounderOpportunityBadges } from '@/components/community/FounderOpportunityBadges'
+import { SocialLinks } from '@/components/community/SocialLinks'
 import { TrustBadge } from '@/components/community/TrustBadge'
 import { resolveFounderAvatarUrl } from '@/lib/media-image'
+import { hasSocialLinks } from '@/lib/social-links'
 import type { Founder, Media } from '@/payload-types'
 
 type FounderCardProps = {
   founder: Pick<
     Founder,
     'name' | 'slug' | 'headline' | 'city' | 'state' | 'country' | 'moderationStatus' | 'verificationStatus' | 'avatarUrl'
+    | 'lookingForCoFounder' | 'openToOpportunities'
+    | 'linkedIn' | 'twitter' | 'instagram' | 'facebook' | 'youtube' | 'github' | 'website'
   > & {
     avatar?: Media | number | null
   }
@@ -18,6 +23,16 @@ export function FounderCard({ founder }: FounderCardProps) {
   const avatar = resolveFounderAvatarUrl(founder)
 
   const location = [founder.city, founder.state, founder.country].filter(Boolean).join(', ')
+
+  const socialLinks = {
+    linkedIn: founder.linkedIn,
+    twitter: founder.twitter,
+    instagram: founder.instagram,
+    facebook: founder.facebook,
+    youtube: founder.youtube,
+    github: founder.github,
+    website: founder.website,
+  }
 
   return (
     <article className="group overflow-hidden rounded-2xl border border-brand-white/10 bg-brand-black/60">
@@ -52,6 +67,10 @@ export function FounderCard({ founder }: FounderCardProps) {
               <p className="line-clamp-2 text-sm text-brand-white/70">{founder.headline}</p>
             ) : null}
             {location ? <p className="text-xs text-brand-white/50">{location}</p> : null}
+            <FounderOpportunityBadges founder={founder} />
+            {hasSocialLinks(socialLinks) ? (
+              <SocialLinks links={socialLinks} limit={3} iconClassName="h-7 w-7" />
+            ) : null}
           </div>
         </div>
       </Link>

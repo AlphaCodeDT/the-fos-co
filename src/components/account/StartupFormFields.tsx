@@ -3,6 +3,7 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { OpportunitySection } from '@/components/account/OpportunitySection'
+import { SocialLinksFormSection } from '@/components/account/SocialLinksFormSection'
 import {
   STARTUP_STAGE_OPTIONS,
   selectClassName,
@@ -85,10 +86,6 @@ export function StartupFormFields({
           </select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="website">Website</Label>
-          <Input id="website" name="website" defaultValue={startup?.website || ''} />
-        </div>
-        <div className="space-y-2">
           <Label htmlFor="teamSize">Team size</Label>
           <Input
             id="teamSize"
@@ -132,8 +129,22 @@ export function StartupFormFields({
         </div>
       </div>
 
+      <SocialLinksFormSection
+        values={{
+          linkedIn: startup?.linkedIn,
+          twitter: startup?.twitter,
+          instagram: startup?.instagram,
+          facebook: startup?.facebook,
+          youtube: startup?.youtube,
+          github: startup?.github,
+          website: startup?.website,
+        }}
+      />
+
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium text-brand-white">Organizations</legend>
+        <legend className="text-sm font-medium text-brand-white">
+          Backed by (accelerators &amp; incubators)
+        </legend>
         <div className="grid gap-2 sm:grid-cols-2">
           {organizations.map((organization) => (
             <label key={organization.id} className="flex items-center gap-2 text-sm text-brand-white/80">

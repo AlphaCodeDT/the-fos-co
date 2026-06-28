@@ -105,7 +105,7 @@ export function CommunityFilterBar({
 
         <div className="space-y-2">
           <Label htmlFor="organization" className="text-brand-white/80">
-            Organization
+            Backed by
           </Label>
           <select
             id="organization"
@@ -113,7 +113,7 @@ export function CommunityFilterBar({
             defaultValue={getParam(current, 'organization')}
             className={selectClassName}
           >
-            <option value="">All organizations</option>
+            <option value="">All backers</option>
             {organizations.map((organization) => (
               <option key={organization.id} value={organization.slug}>
                 {organization.name}

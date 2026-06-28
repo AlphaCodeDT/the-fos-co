@@ -3,13 +3,17 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { BackedBySection } from '@/components/community/BackedByList'
 import { ChipList } from '@/components/community/ChipList'
 import { CommunityProfileContent } from '@/components/community/CommunityProfileContent'
+import { FounderOpportunityBadges } from '@/components/community/FounderOpportunityBadges'
+import { SocialLinks } from '@/components/community/SocialLinks'
 import { TrustBadge } from '@/components/community/TrustBadge'
 import { SiteFooter } from '@/components/layout/site-chrome'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { formatTeamRole } from '@/lib/community'
 import { getFounderBySlug, getStartupsForFounder } from '@/lib/data/community'
+import { hasSocialLinks } from '@/lib/social-links'
 import { buildCommunityProfileMetadata, buildFounderPersonJsonLd } from '@/lib/seo'
 import { isIndexable } from '@/lib/trust'
 import { resolveFounderAvatarUrl, resolveStartupLogoUrl } from '@/lib/media-image'
@@ -56,11 +60,15 @@ export default async function FounderProfilePage({ params }: PageProps) {
 
   const avatar = resolveFounderAvatarUrl(founder)
 
-  const socialLinks = [
-    { label: 'LinkedIn', href: founder.linkedIn },
-    { label: 'Twitter', href: founder.twitter },
-    { label: 'Website', href: founder.website },
-  ].filter((link): link is { label: string; href: string } => Boolean(link.href))
+  const socialLinks = {
+    linkedIn: founder.linkedIn,
+    twitter: founder.twitter,
+    instagram: founder.instagram,
+    facebook: founder.facebook,
+    youtube: founder.youtube,
+    github: founder.github,
+    website: founder.website,
+  }
 
   const jsonLd = isIndexable(founder) ? buildFounderPersonJsonLd(founder) : null
 
@@ -100,6 +108,10 @@ export default async function FounderProfilePage({ params }: PageProps) {
                 {[founder.city, founder.state, founder.country].filter(Boolean).join(', ')}
               </p>
             ) : null}
+            <FounderOpportunityBadges founder={founder} className="pt-1" />
+            {hasSocialLinks(socialLinks) ? (
+              <SocialLinks links={socialLinks} className="pt-1" />
+            ) : null}
           </div>
         </div>
 
@@ -114,12 +126,7 @@ export default async function FounderProfilePage({ params }: PageProps) {
               </div>
             ) : null}
             {founder.organizations?.length ? (
-              <div>
-                <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-yellow">
-                  Organizations
-                </h2>
-                <ChipList items={founder.organizations} />
-              </div>
+              <BackedBySection organizations={founder.organizations} />
             ) : null}
           </div>
         ) : null}
@@ -175,26 +182,6 @@ export default async function FounderProfilePage({ params }: PageProps) {
                 )
               })}
             </div>
-          </div>
-        ) : null}
-
-        {socialLinks.length > 0 ? (
-          <div className="mt-10 border-t border-brand-white/10 pt-8">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-brand-yellow">Links</h2>
-            <ul className="mt-3 flex flex-wrap gap-4">
-              {socialLinks.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-brand-yellow hover:underline"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
           </div>
         ) : null}
       </main>

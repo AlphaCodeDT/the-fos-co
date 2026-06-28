@@ -264,6 +264,10 @@ export interface Founder {
   linkedIn?: string | null;
   twitter?: string | null;
   website?: string | null;
+  instagram?: string | null;
+  facebook?: string | null;
+  youtube?: string | null;
+  github?: string | null;
   industries?: (number | Industry)[] | null;
   organizations?: (number | Organization)[] | null;
   lookingForCoFounder?: boolean | null;
@@ -359,6 +363,12 @@ export interface Startup {
     [k: string]: unknown;
   } | null;
   website?: string | null;
+  linkedIn?: string | null;
+  twitter?: string | null;
+  instagram?: string | null;
+  facebook?: string | null;
+  youtube?: string | null;
+  github?: string | null;
   industry?: (number | null) | Industry;
   stage?: ('idea' | 'mvp' | 'early-revenue' | 'growth' | 'scaling') | null;
   city?: string | null;
@@ -620,6 +630,10 @@ export interface FoundersSelect<T extends boolean = true> {
   linkedIn?: T;
   twitter?: T;
   website?: T;
+  instagram?: T;
+  facebook?: T;
+  youtube?: T;
+  github?: T;
   industries?: T;
   organizations?: T;
   lookingForCoFounder?: T;
@@ -790,6 +804,12 @@ export interface StartupsSelect<T extends boolean = true> {
   tagline?: T;
   description?: T;
   website?: T;
+  linkedIn?: T;
+  twitter?: T;
+  instagram?: T;
+  facebook?: T;
+  youtube?: T;
+  github?: T;
   industry?: T;
   stage?: T;
   city?: T;

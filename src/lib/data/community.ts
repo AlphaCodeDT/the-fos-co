@@ -78,6 +78,15 @@ export async function getFounders({
       country: true,
       moderationStatus: true,
       verificationStatus: true,
+      lookingForCoFounder: true,
+      openToOpportunities: true,
+      linkedIn: true,
+      twitter: true,
+      instagram: true,
+      facebook: true,
+      youtube: true,
+      github: true,
+      website: true,
     },
   })
 }
@@ -115,6 +124,13 @@ export async function getStartups({
       isLookingForCoFounder: true,
       moderationStatus: true,
       verificationStatus: true,
+      linkedIn: true,
+      twitter: true,
+      instagram: true,
+      facebook: true,
+      youtube: true,
+      github: true,
+      website: true,
     },
   })
 }

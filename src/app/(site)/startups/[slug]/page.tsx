@@ -3,10 +3,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { BackedBySection } from '@/components/community/BackedByList'
 import { ChipList } from '@/components/community/ChipList'
 import { ClaimStartupButton } from '@/components/community/ClaimStartupButton'
 import { CommunityProfileContent } from '@/components/community/CommunityProfileContent'
 import { OpportunityBadges } from '@/components/community/OpportunityBadges'
+import { SocialLinks } from '@/components/community/SocialLinks'
+import { StartupCompanyDetails } from '@/components/community/StartupCompanyDetails'
+import { StartupOpportunitiesList } from '@/components/community/StartupOpportunitiesList'
 import { TrustBadge } from '@/components/community/TrustBadge'
 import { WomenLedBadge } from '@/components/community/WomenLedBadge'
 import { SiteFooter } from '@/components/layout/site-chrome'
@@ -14,6 +18,7 @@ import { SiteHeader } from '@/components/layout/SiteHeader'
 import { getCurrentFounder } from '@/lib/auth/founder'
 import { formatTeamRole } from '@/lib/community'
 import { getStartupBySlug } from '@/lib/data/community'
+import { hasSocialLinks } from '@/lib/social-links'
 import { lexicalToPlainText } from '@/lib/richtext'
 import { buildCommunityProfileMetadata, buildStartupOrganizationJsonLd } from '@/lib/seo'
 import { isIndexable } from '@/lib/trust'
@@ -73,6 +78,16 @@ export default async function StartupProfilePage({ params }: PageProps) {
     ? buildStartupOrganizationJsonLd(startup, descriptionPlainText)
     : null
 
+  const socialLinks = {
+    linkedIn: startup.linkedIn,
+    twitter: startup.twitter,
+    instagram: startup.instagram,
+    facebook: startup.facebook,
+    youtube: startup.youtube,
+    github: startup.github,
+    website: startup.website,
+  }
+
   return (
     <>
       {jsonLd ? (
@@ -100,7 +115,6 @@ export default async function StartupProfilePage({ params }: PageProps) {
                 moderationStatus={startup.moderationStatus}
                 verificationStatus={startup.verificationStatus}
               />
-              <WomenLedBadge womenLed={startup.womenLed} />
             </div>
             {startup.tagline ? (
               <p className="text-lg text-brand-white/70">{startup.tagline}</p>
@@ -110,7 +124,13 @@ export default async function StartupProfilePage({ params }: PageProps) {
                 {[startup.city, startup.state, startup.country].filter(Boolean).join(', ')}
               </p>
             ) : null}
-            <OpportunityBadges startup={startup} className="pt-1" />
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              <WomenLedBadge womenLed={startup.womenLed} />
+              <OpportunityBadges startup={startup} />
+            </div>
+            {hasSocialLinks(socialLinks) ? (
+              <SocialLinks links={socialLinks} className="pt-1" />
+            ) : null}
           </div>
         </div>
 
@@ -125,15 +145,12 @@ export default async function StartupProfilePage({ params }: PageProps) {
               </div>
             ) : null}
             {startup.organizations?.length ? (
-              <div>
-                <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-yellow">
-                  Organizations
-                </h2>
-                <ChipList items={startup.organizations} />
-              </div>
+              <BackedBySection organizations={startup.organizations} />
             ) : null}
           </div>
         ) : null}
+
+        <StartupCompanyDetails startup={startup} />
 
         {startup.description ? (
           <div className="mt-10 border-t border-brand-white/10 pt-8">
@@ -143,6 +160,8 @@ export default async function StartupProfilePage({ params }: PageProps) {
             </div>
           </div>
         ) : null}
+
+        <StartupOpportunitiesList opportunities={startup.opportunities} />
 
         {team.length > 0 ? (
           <div className="mt-10 border-t border-brand-white/10 pt-8">

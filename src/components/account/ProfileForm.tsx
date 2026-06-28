@@ -5,6 +5,7 @@ import { useActionState } from 'react'
 import { FormMessage } from '@/components/account/AccountShell'
 import { ImageSubmitProgress } from '@/components/account/ImageSubmitProgress'
 import { ImageUploadField } from '@/components/account/ImageUploadField'
+import { SocialLinksFormSection } from '@/components/account/SocialLinksFormSection'
 import { useImageFormSubmit } from '@/components/account/useImageFormSubmit'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -135,19 +136,19 @@ export function ProfileForm({
           <Label htmlFor="country">Country</Label>
           <Input id="country" name="country" defaultValue={founder.country || ''} />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="linkedIn">LinkedIn</Label>
-          <Input id="linkedIn" name="linkedIn" defaultValue={founder.linkedIn || ''} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="twitter">Twitter / X</Label>
-          <Input id="twitter" name="twitter" defaultValue={founder.twitter || ''} />
-        </div>
-        <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="website">Website</Label>
-          <Input id="website" name="website" defaultValue={founder.website || ''} />
-        </div>
       </div>
+
+      <SocialLinksFormSection
+        values={{
+          linkedIn: founder.linkedIn,
+          twitter: founder.twitter,
+          instagram: founder.instagram,
+          facebook: founder.facebook,
+          youtube: founder.youtube,
+          github: founder.github,
+          website: founder.website,
+        }}
+      />
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium text-brand-white">Industries</legend>
@@ -168,7 +169,9 @@ export function ProfileForm({
       </fieldset>
 
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium text-brand-white">Organizations</legend>
+        <legend className="text-sm font-medium text-brand-white">
+          Backed by (accelerators &amp; incubators)
+        </legend>
         <div className="grid gap-2 sm:grid-cols-2">
           {organizations.map((organization) => (
             <label key={organization.id} className="flex items-center gap-2 text-sm text-brand-white/80">
