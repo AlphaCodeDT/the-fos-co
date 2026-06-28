@@ -121,6 +121,17 @@ export const Startups: CollectionConfig = {
           }
         }
 
+        if (Array.isArray(next.team)) {
+          for (const row of next.team) {
+            const hasFounder = getRelationshipId(row?.founder) != null
+            const hasName = typeof row?.name === 'string' && row.name.trim().length > 0
+
+            if (!hasFounder && !hasName) {
+              throw new Error('Each team member must have a linked founder or a display name.')
+            }
+          }
+        }
+
         return next
       },
     ],
@@ -308,10 +319,16 @@ export const Startups: CollectionConfig = {
       type: 'array',
       fields: [
         {
+          name: 'name',
+          type: 'text',
+          admin: {
+            description: 'Display name for team members not linked to a FoS founder profile.',
+          },
+        },
+        {
           name: 'founder',
           type: 'relationship',
           relationTo: 'founders',
-          required: true,
         },
         {
           name: 'role',

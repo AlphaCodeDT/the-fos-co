@@ -48,7 +48,7 @@ export default async function EditStartupPage({ params }: PageProps) {
         startup={startup}
         industries={industries}
         organizations={organizations}
-        currentFounderId={founder.id}
+        currentFounder={founder}
       />
     </AccountShell>
   )

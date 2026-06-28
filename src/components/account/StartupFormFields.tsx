@@ -9,7 +9,7 @@ import {
   selectClassName,
   textareaClassName,
 } from '@/components/account/startup-form-constants'
-import { TeamSection } from '@/components/account/TeamSection'
+import { TeamSection, type CurrentFounder } from '@/components/account/TeamSection'
 import { lexicalToPlainText } from '@/lib/richtext'
 import type { Industry, Organization, Startup } from '@/payload-types'
 
@@ -17,12 +17,12 @@ export function StartupFormFields({
   startup,
   industries,
   organizations,
-  currentFounderId,
+  currentFounder,
 }: {
   startup?: Startup
   industries: Industry[]
   organizations: Organization[]
-  currentFounderId: number
+  currentFounder: CurrentFounder
 }) {
   const industryId =
     startup && typeof startup.industry === 'object' && startup.industry
@@ -182,7 +182,7 @@ export function StartupFormFields({
         ))}
       </div>
 
-      <TeamSection team={startup?.team} currentFounderId={currentFounderId} />
+      <TeamSection team={startup?.team} currentFounder={currentFounder} />
       <OpportunitySection opportunities={startup?.opportunities} />
     </>
   )

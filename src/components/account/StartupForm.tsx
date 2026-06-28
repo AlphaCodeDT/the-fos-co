@@ -10,18 +10,21 @@ import { useImageFormSubmit } from '@/components/account/useImageFormSubmit'
 import { StartupFormFields } from '@/components/account/StartupFormFields'
 import { Button } from '@/components/ui/button'
 import { createStartupAction, type AccountActionState } from '@/lib/auth/account-actions'
-import type { Industry, Organization } from '@/payload-types'
+import type { Founder, Industry, Organization } from '@/payload-types'
 
 const initialState: AccountActionState = {}
 
 export function NewStartupForm({
   industries,
   organizations,
-  currentFounderId,
+  currentFounder,
 }: {
   industries: Industry[]
   organizations: Organization[]
-  currentFounderId: number
+  currentFounder: Pick<
+    Founder,
+    'id' | 'name' | 'slug' | 'headline' | 'avatarUrl' | 'city'
+  > & { avatar?: Founder['avatar'] }
 }) {
   const [state, formAction, pending] = useActionState(createStartupAction, initialState)
   const {
@@ -60,7 +63,7 @@ export function NewStartupForm({
       <StartupFormFields
         industries={industries}
         organizations={organizations}
-        currentFounderId={currentFounderId}
+        currentFounder={currentFounder}
       />
 
       <div className="space-y-3">

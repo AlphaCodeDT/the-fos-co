@@ -11,7 +11,7 @@ import { StartupFormFields } from '@/components/account/StartupFormFields'
 import { Button } from '@/components/ui/button'
 import { updateStartupAction, type AccountActionState } from '@/lib/auth/account-actions'
 import { resolveStartupLogoUrl } from '@/lib/media-image'
-import type { Industry, Organization, Startup } from '@/payload-types'
+import type { Founder, Industry, Organization, Startup } from '@/payload-types'
 
 const initialState: AccountActionState = {}
 
@@ -19,12 +19,15 @@ export function EditStartupForm({
   startup,
   industries,
   organizations,
-  currentFounderId,
+  currentFounder,
 }: {
   startup: Startup
   industries: Industry[]
   organizations: Organization[]
-  currentFounderId: number
+  currentFounder: Pick<
+    Founder,
+    'id' | 'name' | 'slug' | 'headline' | 'avatarUrl' | 'city'
+  > & { avatar?: Founder['avatar'] }
 }) {
   const [state, formAction, pending] = useActionState(updateStartupAction, initialState)
   const {
@@ -73,7 +76,7 @@ export function EditStartupForm({
         startup={startup}
         industries={industries}
         organizations={organizations}
-        currentFounderId={currentFounderId}
+        currentFounder={currentFounder}
       />
 
       <div className="space-y-3">

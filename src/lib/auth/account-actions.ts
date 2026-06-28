@@ -1,6 +1,7 @@
 'use server'
 
 import { getCurrentFounder } from '@/lib/auth/founder'
+import { searchFounders } from '@/lib/data/founder-search'
 import { plainTextToLexical } from '@/lib/richtext'
 import { getPayloadClient } from '@/lib/payload'
 import { SOCIAL_LINK_FIELDS, type SocialLinkField } from '@/lib/social-links'
@@ -62,17 +63,24 @@ function parseTeamRows(formData: FormData): Startup['team'] {
   for (let index = 0; index < 50; index += 1) {
     const role = formData.get(`team[${index}].role`)
     const founderRaw = formData.get(`team[${index}].founder`)
+    const name = String(formData.get(`team[${index}].name`) || '').trim()
 
-    if (!role && !founderRaw) {
+    if (!role && !founderRaw && !name) {
       if (index > 0) break
       continue
     }
 
-    const founder = Number(founderRaw)
-    if (!role || Number.isNaN(founder) || founder <= 0) continue
+    if (!role) continue
+
+    const founder = founderRaw ? Number(founderRaw) : Number.NaN
+    const hasFounder = !Number.isNaN(founder) && founder > 0
+    const hasName = name.length > 0
+
+    if (!hasFounder && !hasName) continue
 
     rows.push({
-      founder,
+      ...(hasFounder ? { founder } : {}),
+      ...(hasName && !hasFounder ? { name } : {}),
       role: String(role) as TeamRole,
       isPrimary: formData.get(`team[${index}].isPrimary`) === 'on',
     })
@@ -198,6 +206,16 @@ function buildStartupData(formData: FormData): Partial<Startup> {
   }
 
   return data
+}
+
+export async function searchFoundersAction(query: string) {
+  const founder = await getCurrentFounder()
+
+  if (!founder) {
+    return []
+  }
+
+  return searchFounders(query)
 }
 
 export async function updateProfileAction(

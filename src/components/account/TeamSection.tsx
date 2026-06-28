@@ -2,45 +2,108 @@
 
 import { useState } from 'react'
 
+import { FounderSearchPicker } from '@/components/account/FounderSearchPicker'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { TEAM_ROLE_OPTIONS, selectClassName } from '@/components/account/startup-form-constants'
-import type { Startup } from '@/payload-types'
+import { founderToSearchResult } from '@/lib/founder-search-utils'
+import type { Founder, Startup } from '@/payload-types'
+
+export type CurrentFounder = Pick<
+  Founder,
+  'id' | 'name' | 'slug' | 'headline' | 'avatarUrl' | 'city'
+> & {
+  avatar?: Founder['avatar']
+}
 
 type TeamRow = {
-  founder: number
+  founderId: number | null
+  displayName: string
+  linkedProfile: ReturnType<typeof founderToSearchResult> | null
   role: string
   isPrimary: boolean
 }
 
-function toTeamRows(
-  team: Startup['team'] | undefined,
-  currentFounderId: number,
-): TeamRow[] {
-  if (team?.length) {
-    return team.map((row) => ({
-      founder:
-        typeof row.founder === 'object' && row.founder ? row.founder.id : Number(row.founder),
+function rowFromTeamMember(row: NonNullable<Startup['team']>[number]): TeamRow | null {
+  const founder =
+    row.founder && typeof row.founder === 'object' ? row.founder : null
+
+  if (founder) {
+    return {
+      founderId: founder.id,
+      displayName: founder.name,
+      linkedProfile: founderToSearchResult(founder),
       role: row.role,
       isPrimary: Boolean(row.isPrimary),
-    }))
+    }
   }
 
-  return [{ founder: currentFounderId, role: 'founder', isPrimary: true }]
+  if (row.name?.trim()) {
+    return {
+      founderId: null,
+      displayName: row.name.trim(),
+      linkedProfile: null,
+      role: row.role,
+      isPrimary: Boolean(row.isPrimary),
+    }
+  }
+
+  if (typeof row.founder === 'number') {
+    return {
+      founderId: row.founder,
+      displayName: '',
+      linkedProfile: null,
+      role: row.role,
+      isPrimary: Boolean(row.isPrimary),
+    }
+  }
+
+  return null
+}
+
+function defaultOwnerRow(currentFounder: CurrentFounder): TeamRow {
+  return {
+    founderId: currentFounder.id,
+    displayName: currentFounder.name,
+    linkedProfile: founderToSearchResult(currentFounder),
+    role: 'founder',
+    isPrimary: true,
+  }
+}
+
+function toTeamRows(
+  team: Startup['team'] | undefined,
+  currentFounder: CurrentFounder,
+): TeamRow[] {
+  if (team?.length) {
+    return team
+      .map((row) => rowFromTeamMember(row))
+      .filter((row): row is TeamRow => row !== null)
+  }
+
+  return [defaultOwnerRow(currentFounder)]
 }
 
 export function TeamSection({
   team,
-  currentFounderId,
+  currentFounder,
 }: {
   team?: Startup['team']
-  currentFounderId: number
+  currentFounder: CurrentFounder
 }) {
-  const [rows, setRows] = useState<TeamRow[]>(() => toTeamRows(team, currentFounderId))
+  const [rows, setRows] = useState<TeamRow[]>(() => toTeamRows(team, currentFounder))
 
   function addRow() {
-    setRows((prev) => [...prev, { founder: currentFounderId, role: 'co-founder', isPrimary: false }])
+    setRows((prev) => [
+      ...prev,
+      {
+        founderId: null,
+        displayName: '',
+        linkedProfile: null,
+        role: 'co-founder',
+        isPrimary: false,
+      },
+    ])
   }
 
   function removeRow(index: number) {
@@ -51,25 +114,36 @@ export function TeamSection({
     <fieldset className="space-y-3">
       <legend className="text-sm font-medium text-brand-white">Team</legend>
       <p className="text-xs text-brand-white/50">
-        Add founders on your team by their profile ID (yours is {currentFounderId}).
+        Search for a founder by name, or enter a name if they&apos;re not on Founders of Startups
+        yet.
       </p>
       {rows.map((row, index) => (
         <div
           key={index}
           className="grid gap-3 rounded-lg border border-brand-white/10 p-4 sm:grid-cols-2"
         >
-          <input type="hidden" name={`team[${index}].founder`} value={row.founder} />
-          <div className="space-y-2">
-            <Label htmlFor={`team-founder-${index}`}>Founder profile ID</Label>
-            <Input
-              id={`team-founder-${index}`}
-              type="number"
-              min={1}
-              value={row.founder}
-              onChange={(event) => {
-                const founder = Number(event.target.value)
+          <div className="sm:col-span-2">
+            <FounderSearchPicker
+              inputId={`team-member-${index}`}
+              founderFieldName={`team[${index}].founder`}
+              nameFieldName={`team[${index}].name`}
+              value={{
+                founderId: row.founderId,
+                displayName: row.displayName,
+                linkedProfile: row.linkedProfile,
+              }}
+              onChange={(next) => {
                 setRows((prev) =>
-                  prev.map((item, i) => (i === index ? { ...item, founder } : item)),
+                  prev.map((item, i) =>
+                    i === index
+                      ? {
+                          ...item,
+                          founderId: next.founderId,
+                          displayName: next.displayName,
+                          linkedProfile: next.linkedProfile,
+                        }
+                      : item,
+                  ),
                 )
               }}
             />

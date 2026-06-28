@@ -384,7 +384,11 @@ export interface Startup {
   isLookingForCoFounder?: boolean | null;
   team?:
     | {
-        founder: number | Founder;
+        /**
+         * Display name for team members not linked to a FoS founder profile.
+         */
+        name?: string | null;
+        founder?: (number | null) | Founder;
         role: 'founder' | 'co-founder' | 'ceo' | 'cto' | 'cpo' | 'advisor';
         isPrimary?: boolean | null;
         id?: string | null;
@@ -826,6 +830,7 @@ export interface StartupsSelect<T extends boolean = true> {
   team?:
     | T
     | {
+        name?: T;
         founder?: T;
         role?: T;
         isPrimary?: T;

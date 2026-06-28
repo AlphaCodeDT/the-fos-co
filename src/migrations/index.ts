@@ -5,6 +5,7 @@ import * as migration_20260627_032301 from './20260627_032301';
 import * as migration_20260627_052400_founder_auth_verify_columns from './20260627_052400_founder_auth_verify_columns';
 import * as migration_20260627_120000_founder_startup_image_urls from './20260627_120000_founder_startup_image_urls';
 import * as migration_20260628_000000_social_links from './20260628_000000_social_links';
+import * as migration_20260628_120000_team_member_name from './20260628_120000_team_member_name';
 
 export const migrations = [
   {
@@ -41,5 +42,10 @@ export const migrations = [
     up: migration_20260628_000000_social_links.up,
     down: migration_20260628_000000_social_links.down,
     name: '20260628_000000_social_links',
+  },
+  {
+    up: migration_20260628_120000_team_member_name.up,
+    down: migration_20260628_120000_team_member_name.down,
+    name: '20260628_120000_team_member_name',
   },
 ];

@@ -170,22 +170,36 @@ export default async function StartupProfilePage({ params }: PageProps) {
               {team.map((member, index) => {
                 const founder =
                   member.founder && typeof member.founder === 'object' ? member.founder : null
+                const displayName = founder?.name || member.name?.trim()
 
-                if (!founder) return null
+                if (!displayName) return null
+
+                const rowClassName = `flex items-center justify-between rounded-xl border px-4 py-3 transition-colors ${
+                  member.isPrimary
+                    ? 'border-brand-yellow/40 bg-brand-yellow/5'
+                    : 'border-brand-white/10 bg-brand-black/60'
+                }`
+
+                if (founder) {
+                  return (
+                    <li key={`${founder.id}-${index}`}>
+                      <Link
+                        href={`/founders/${founder.slug}`}
+                        className={`${rowClassName} hover:border-brand-yellow/40`}
+                      >
+                        <span className="font-medium text-brand-white">{displayName}</span>
+                        <span className="text-sm text-brand-yellow">{formatTeamRole(member.role)}</span>
+                      </Link>
+                    </li>
+                  )
+                }
 
                 return (
-                  <li key={`${founder.id}-${index}`}>
-                    <Link
-                      href={`/founders/${founder.slug}`}
-                      className={`flex items-center justify-between rounded-xl border px-4 py-3 transition-colors hover:border-brand-yellow/40 ${
-                        member.isPrimary
-                          ? 'border-brand-yellow/40 bg-brand-yellow/5'
-                          : 'border-brand-white/10 bg-brand-black/60'
-                      }`}
-                    >
-                      <span className="font-medium text-brand-white">{founder.name}</span>
+                  <li key={`unlinked-${index}`}>
+                    <div className={rowClassName}>
+                      <span className="font-medium text-brand-white">{displayName}</span>
                       <span className="text-sm text-brand-yellow">{formatTeamRole(member.role)}</span>
-                    </Link>
+                    </div>
                   </li>
                 )
               })}

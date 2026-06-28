@@ -21,7 +21,7 @@ export default async function NewStartupPage() {
       <NewStartupForm
         industries={industries}
         organizations={organizations}
-        currentFounderId={founder.id}
+        currentFounder={founder}
       />
     </AccountShell>
   )
