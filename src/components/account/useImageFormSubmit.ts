@@ -54,12 +54,15 @@ export function useImageFormSubmit({
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setUploadError(undefined)
+    setPhase(pendingFile ? 'uploading' : 'saving')
+    if (!pendingFile) {
+      setUploadIndeterminate(true)
+    }
 
     const form = event.currentTarget
     const formData = new FormData(form)
 
     if (pendingFile) {
-      setPhase('uploading')
       setUploadPercent(0)
       setUploadIndeterminate(false)
 

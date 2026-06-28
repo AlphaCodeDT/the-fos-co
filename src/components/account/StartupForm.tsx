@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import Link from 'next/link'
 
+import { AccountSubmitButton } from '@/components/account/AccountSubmitButton'
 import { FormMessage } from '@/components/account/AccountShell'
 import { ImageSubmitProgress } from '@/components/account/ImageSubmitProgress'
 import { ImageUploadField } from '@/components/account/ImageUploadField'
@@ -41,12 +42,7 @@ export function NewStartupForm({
     actionState: state,
   })
 
-  const submitLabel =
-    phase === 'uploading'
-      ? 'Uploading…'
-      : phase === 'saving' || pending
-        ? 'Creating…'
-        : 'Create startup'
+  const pendingLabel = phase === 'uploading' ? 'Uploading…' : 'Creating…'
 
   return (
     <form
@@ -67,9 +63,11 @@ export function NewStartupForm({
           uploadIndeterminate={uploadIndeterminate}
         />
         <div className="flex gap-3">
-          <Button type="submit" disabled={isBusy}>
-            {submitLabel}
-          </Button>
+          <AccountSubmitButton
+            pending={isBusy}
+            idleLabel="Create startup"
+            pendingLabel={pendingLabel}
+          />
           <Button asChild variant="outline">
             <Link href="/account/startups">Cancel</Link>
           </Button>

@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 
+import { AccountSubmitButton } from '@/components/account/AccountSubmitButton'
 import { FormMessage } from '@/components/account/AccountShell'
 import { CohortFormFields } from '@/components/account/CohortFormFields'
 import { LocationSelectFields } from '@/components/account/LocationSelectFields'
@@ -10,7 +11,6 @@ import { ImageUploadField } from '@/components/account/ImageUploadField'
 import { OrganizationSearchPicker } from '@/components/account/OrganizationSearchPicker'
 import { SocialLinksFormSection } from '@/components/account/SocialLinksFormSection'
 import { useImageFormSubmit } from '@/components/account/useImageFormSubmit'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { updateProfileAction, type AccountActionState } from '@/lib/auth/account-actions'
@@ -64,12 +64,7 @@ export function ProfileForm({
 
   const initialAvatarUrl = resolveFounderAvatarUrl(founder)
 
-  const submitLabel =
-    phase === 'uploading'
-      ? 'Uploading…'
-      : phase === 'saving' || pending
-        ? 'Saving…'
-        : 'Save profile'
+  const pendingLabel = phase === 'uploading' ? 'Uploading…' : 'Saving…'
 
   return (
     <form
@@ -194,9 +189,11 @@ export function ProfileForm({
           uploadPercent={uploadPercent}
           uploadIndeterminate={uploadIndeterminate}
         />
-        <Button type="submit" disabled={isBusy}>
-          {submitLabel}
-        </Button>
+        <AccountSubmitButton
+          pending={isBusy}
+          idleLabel="Save profile"
+          pendingLabel={pendingLabel}
+        />
       </div>
     </form>
   )
