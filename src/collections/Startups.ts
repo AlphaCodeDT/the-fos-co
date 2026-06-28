@@ -366,6 +366,7 @@ export const Startups: CollectionConfig = {
       name: 'claim',
       type: 'group',
       access: {
+        read: () => true,
         update: fieldAdminOrEditor,
       },
       fields: [
@@ -373,14 +374,26 @@ export const Startups: CollectionConfig = {
           name: 'claimedBy',
           type: 'relationship',
           relationTo: 'founders',
+          access: {
+            read: () => true,
+            update: fieldAdminOrEditor,
+          },
         },
         {
           name: 'claimedAt',
           type: 'date',
+          access: {
+            read: () => true,
+            update: fieldAdminOrEditor,
+          },
         },
         {
           name: 'claimStatus',
           type: 'select',
+          access: {
+            read: () => true,
+            update: fieldAdminOrEditor,
+          },
           defaultValue: 'unclaimed',
           index: true,
           options: [

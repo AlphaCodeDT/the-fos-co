@@ -1,5 +1,8 @@
 'use server'
 
+import { readFileSync } from 'fs'
+import path from 'path'
+
 import { requireFounder } from '@/lib/auth/founder'
 import { createSupabaseServiceClient } from '@/lib/supabase/server'
 
@@ -26,6 +29,26 @@ function sanitizeUploadFileName(fileName: string): string {
   return base.length > 0 ? base.slice(0, 120) : 'upload'
 }
 
+function tryGetE2eStoragePrefix(): string | null {
+  if (process.env.E2E_ALLOW_PROD !== 'true') {
+    return null
+  }
+
+  try {
+    const statePath = path.join(process.cwd(), 'tests', 'e2e', '.run-state.json')
+    const raw = readFileSync(statePath, 'utf8')
+    const state = JSON.parse(raw) as { token?: string }
+
+    if (typeof state.token === 'string' && state.token.length > 0) {
+      return `e2e/${state.token}`
+    }
+  } catch {
+    // Missing or invalid E2E state — fall back to normal upload paths.
+  }
+
+  return null
+}
+
 export async function createSignedUpload({
   kind,
   fileName,
@@ -48,11 +71,14 @@ export async function createSignedUpload({
   }
 
   const safeName = sanitizeUploadFileName(fileName)
-  const prefix = kind === 'avatar' ? 'founders' : 'startups'
-  const path = `${prefix}/${founder.id}/${Date.now()}-${safeName}`
+  const e2ePrefix = tryGetE2eStoragePrefix()
+  const defaultPrefix = kind === 'avatar' ? 'founders' : 'startups'
+  const storagePath = e2ePrefix
+    ? `${e2ePrefix}/${kind}/${founder.id}/${Date.now()}-${safeName}`
+    : `${defaultPrefix}/${founder.id}/${Date.now()}-${safeName}`
 
   const supabase = createSupabaseServiceClient()
-  const { data, error } = await supabase.storage.from('media').createSignedUploadUrl(path)
+  const { data, error } = await supabase.storage.from('media').createSignedUploadUrl(storagePath)
 
   if (error || !data?.token || !data.signedUrl) {
     return { error: error?.message || 'Could not create upload URL.' }
