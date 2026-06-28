@@ -1,4 +1,4 @@
-import type { Founder, Startup } from '@/payload-types'
+import type { Founder, Organization, Startup } from '@/payload-types'
 
 import {
   buildFounderWhere,
@@ -12,6 +12,64 @@ import { getPayloadClient } from '@/lib/payload'
 import { approvedCommunityWhere, indexableCommunityWhere } from '@/lib/queries'
 
 const DEFAULT_LIMIT = 24
+
+const founderDirectorySelect = {
+  id: true,
+  name: true,
+  slug: true,
+  headline: true,
+  avatar: true,
+  avatarUrl: true,
+  city: true,
+  state: true,
+  country: true,
+  cohortName: true,
+  cohortYear: true,
+  moderationStatus: true,
+  verificationStatus: true,
+  lookingForCoFounder: true,
+  openToOpportunities: true,
+  gender: true,
+  industries: true,
+  organizations: true,
+  linkedIn: true,
+  twitter: true,
+  instagram: true,
+  facebook: true,
+  youtube: true,
+  github: true,
+  website: true,
+} as const
+
+const startupDirectorySelect = {
+  id: true,
+  name: true,
+  slug: true,
+  tagline: true,
+  logo: true,
+  industry: true,
+  city: true,
+  state: true,
+  country: true,
+  cohortName: true,
+  cohortYear: true,
+  womenLed: true,
+  isHiring: true,
+  isRaising: true,
+  isLookingForCoFounder: true,
+  moderationStatus: true,
+  verificationStatus: true,
+  linkedIn: true,
+  twitter: true,
+  instagram: true,
+  facebook: true,
+  youtube: true,
+  github: true,
+  website: true,
+  stage: true,
+  fundingStatus: true,
+  foundedYear: true,
+} as const
 
 async function getIndustryIdBySlug(slug?: string): Promise<number | undefined> {
   if (!slug) return undefined
@@ -73,33 +131,8 @@ export async function getFounders({
     sort: 'name',
     page,
     limit,
-    depth: 1,
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      headline: true,
-      avatar: true,
-      city: true,
-      state: true,
-      country: true,
-      cohortName: true,
-      cohortYear: true,
-      moderationStatus: true,
-      verificationStatus: true,
-      lookingForCoFounder: true,
-      openToOpportunities: true,
-      gender: true,
-      industries: true,
-      organizations: true,
-      linkedIn: true,
-      twitter: true,
-      instagram: true,
-      facebook: true,
-      youtube: true,
-      github: true,
-      website: true,
-    },
+    depth: 2,
+    select: founderDirectorySelect,
   })
 
   return {
@@ -127,35 +160,7 @@ export async function getStartups({
     page,
     limit,
     depth: 1,
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      tagline: true,
-      logo: true,
-      industry: true,
-      city: true,
-      state: true,
-      country: true,
-      cohortName: true,
-      cohortYear: true,
-      womenLed: true,
-      isHiring: true,
-      isRaising: true,
-      isLookingForCoFounder: true,
-      moderationStatus: true,
-      verificationStatus: true,
-      linkedIn: true,
-      twitter: true,
-      instagram: true,
-      facebook: true,
-      youtube: true,
-      github: true,
-      website: true,
-      stage: true,
-      fundingStatus: true,
-      foundedYear: true,
-    },
+    select: startupDirectorySelect,
   })
 }
 
@@ -232,6 +237,56 @@ export async function getFilterOrganizations() {
     sort: 'name',
     limit: 200,
     depth: 0,
+  })
+}
+
+export async function getOrganizationBySlug(slug: string): Promise<Organization | null> {
+  const payload = await getPayloadClient()
+
+  const result = await payload.find({
+    collection: 'organizations',
+    where: {
+      and: [{ slug: { equals: slug } }, { status: { equals: 'published' } }],
+    },
+    limit: 1,
+    depth: 1,
+  })
+
+  return (result.docs[0] as Organization | undefined) ?? null
+}
+
+export async function getFoundersForOrganization(orgId: number) {
+  const payload = await getPayloadClient()
+
+  const result = await payload.find({
+    collection: 'founders',
+    where: {
+      and: [approvedCommunityWhere, { organizations: { equals: orgId } }],
+    },
+    sort: 'name',
+    limit: 100,
+    depth: 1,
+    select: founderDirectorySelect,
+  })
+
+  return {
+    ...result,
+    docs: result.docs.map(mapFounderForPublic),
+  }
+}
+
+export async function getStartupsForOrganization(orgId: number) {
+  const payload = await getPayloadClient()
+
+  return payload.find({
+    collection: 'startups',
+    where: {
+      and: [approvedCommunityWhere, { organizations: { equals: orgId } }],
+    },
+    sort: 'name',
+    limit: 100,
+    depth: 1,
+    select: startupDirectorySelect,
   })
 }
 

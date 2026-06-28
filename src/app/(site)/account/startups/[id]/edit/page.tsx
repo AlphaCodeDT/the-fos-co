@@ -36,7 +36,7 @@ export default async function EditStartupPage({ params }: PageProps) {
     notFound()
   }
 
-  const { industries, organizations } = await getTaxonomyOptions()
+  const { industries } = await getTaxonomyOptions()
 
   return (
     <AccountShell
@@ -47,7 +47,6 @@ export default async function EditStartupPage({ params }: PageProps) {
       <EditStartupForm
         startup={startup}
         industries={industries}
-        organizations={organizations}
         currentFounder={founder}
       />
     </AccountShell>

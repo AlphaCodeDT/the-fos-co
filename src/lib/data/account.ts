@@ -35,6 +35,21 @@ export async function getFounderClaims(founderId: number): Promise<Startup[]> {
   return result.docs as Startup[]
 }
 
+export async function getFounderForAccount(founderId: number): Promise<Founder | null> {
+  const payload = await getPayloadClient()
+
+  try {
+    return (await payload.findByID({
+      collection: 'founders',
+      id: founderId,
+      depth: 2,
+      overrideAccess: true,
+    })) as Founder
+  } catch {
+    return null
+  }
+}
+
 export async function getStartupForOwner(startupId: number, founderId: number): Promise<Startup | null> {
   const payload = await getPayloadClient()
 
@@ -48,7 +63,7 @@ export async function getStartupForOwner(startupId: number, founderId: number): 
         },
       ],
     },
-    depth: 1,
+    depth: 2,
     limit: 1,
     overrideAccess: true,
     select: {

@@ -7,6 +7,7 @@ import { CohortFormFields } from '@/components/account/CohortFormFields'
 import { LocationSelectFields } from '@/components/account/LocationSelectFields'
 import { ImageSubmitProgress } from '@/components/account/ImageSubmitProgress'
 import { ImageUploadField } from '@/components/account/ImageUploadField'
+import { OrganizationSearchPicker } from '@/components/account/OrganizationSearchPicker'
 import { SocialLinksFormSection } from '@/components/account/SocialLinksFormSection'
 import { useImageFormSubmit } from '@/components/account/useImageFormSubmit'
 import { Button } from '@/components/ui/button'
@@ -15,7 +16,8 @@ import { Label } from '@/components/ui/label'
 import { updateProfileAction, type AccountActionState } from '@/lib/auth/account-actions'
 import { resolveFounderAvatarUrl } from '@/lib/media-image'
 import { lexicalToPlainText } from '@/lib/richtext'
-import type { Founder, Industry, Organization } from '@/payload-types'
+import { mapOrganizationsToSearchResults } from '@/lib/organization-search-utils'
+import type { Founder, Industry } from '@/payload-types'
 import { selectClassName } from '@/components/account/startup-form-constants'
 
 const GENDER_OPTIONS = [
@@ -31,11 +33,9 @@ const initialState: AccountActionState = {}
 export function ProfileForm({
   founder,
   industries,
-  organizations,
 }: {
   founder: Founder
   industries: Industry[]
-  organizations: Organization[]
 }) {
   const [state, formAction, pending] = useActionState(updateProfileAction, initialState)
   const {
@@ -60,11 +60,7 @@ export function ProfileForm({
       .filter((id): id is number => typeof id === 'number'),
   )
 
-  const selectedOrganizations = new Set(
-    (founder.organizations || [])
-      .map((item) => (typeof item === 'object' ? item.id : item))
-      .filter((id): id is number => typeof id === 'number'),
-  )
+  const initialOrganizations = mapOrganizationsToSearchResults(founder.organizations)
 
   const initialAvatarUrl = resolveFounderAvatarUrl(founder)
 
@@ -169,25 +165,7 @@ export function ProfileForm({
         </div>
       </fieldset>
 
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-medium text-brand-white">
-          Backed by (accelerators &amp; incubators)
-        </legend>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {organizations.map((organization) => (
-            <label key={organization.id} className="flex items-center gap-2 text-sm text-brand-white/80">
-              <input
-                type="checkbox"
-                name="organizations"
-                value={organization.id}
-                defaultChecked={selectedOrganizations.has(organization.id)}
-                className="accent-brand-yellow"
-              />
-              {organization.name}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <OrganizationSearchPicker inputId="organizations" initialOrganizations={initialOrganizations} />
 
       <div className="flex flex-wrap gap-4">
         <label className="flex items-center gap-2 text-sm text-brand-white/80">

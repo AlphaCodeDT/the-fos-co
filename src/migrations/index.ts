@@ -7,6 +7,8 @@ import * as migration_20260627_120000_founder_startup_image_urls from './2026062
 import * as migration_20260628_000000_social_links from './20260628_000000_social_links';
 import * as migration_20260628_120000_team_member_name from './20260628_120000_team_member_name';
 import * as migration_20260628_140000_location_cohort from './20260628_140000_location_cohort';
+import * as migration_20260628_160000_organizations_enum_expand from './20260628_160000_organizations_enum_expand';
+import * as migration_20260628_160001_organizations_enrichment from './20260628_160001_organizations_enrichment';
 
 export const migrations = [
   {
@@ -53,5 +55,15 @@ export const migrations = [
     up: migration_20260628_140000_location_cohort.up,
     down: migration_20260628_140000_location_cohort.down,
     name: '20260628_140000_location_cohort',
+  },
+  {
+    up: migration_20260628_160000_organizations_enum_expand.up,
+    down: migration_20260628_160000_organizations_enum_expand.down,
+    name: '20260628_160000_organizations_enum_expand',
+  },
+  {
+    up: migration_20260628_160001_organizations_enrichment.up,
+    down: migration_20260628_160001_organizations_enrichment.down,
+    name: '20260628_160001_organizations_enrichment',
   },
 ];

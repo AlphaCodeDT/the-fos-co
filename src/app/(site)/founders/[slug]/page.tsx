@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { BackedBySection } from '@/components/community/BackedByList'
+import { GroupedBackedBySection } from '@/components/community/GroupedBackedBySection'
 import { ChipList } from '@/components/community/ChipList'
 import { CommunityProfileContent } from '@/components/community/CommunityProfileContent'
 import { CohortBadge } from '@/components/community/CohortBadge'
@@ -141,7 +141,7 @@ export default async function FounderProfilePage({ params }: PageProps) {
               </div>
             ) : null}
             {founder.organizations?.length ? (
-              <BackedBySection organizations={founder.organizations} />
+              <GroupedBackedBySection organizations={founder.organizations} />
             ) : null}
           </div>
         ) : null}

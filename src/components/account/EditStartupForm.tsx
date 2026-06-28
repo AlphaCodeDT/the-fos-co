@@ -11,19 +11,17 @@ import { StartupFormFields } from '@/components/account/StartupFormFields'
 import { Button } from '@/components/ui/button'
 import { updateStartupAction, type AccountActionState } from '@/lib/auth/account-actions'
 import { resolveStartupLogoUrl } from '@/lib/media-image'
-import type { Founder, Industry, Organization, Startup } from '@/payload-types'
+import type { Founder, Industry, Startup } from '@/payload-types'
 
 const initialState: AccountActionState = {}
 
 export function EditStartupForm({
   startup,
   industries,
-  organizations,
   currentFounder,
 }: {
   startup: Startup
   industries: Industry[]
-  organizations: Organization[]
   currentFounder: Pick<
     Founder,
     'id' | 'name' | 'slug' | 'headline' | 'avatarUrl' | 'city'
@@ -72,12 +70,7 @@ export function EditStartupForm({
         onFileSelect={setPendingFile}
       />
 
-      <StartupFormFields
-        startup={startup}
-        industries={industries}
-        organizations={organizations}
-        currentFounder={currentFounder}
-      />
+      <StartupFormFields startup={startup} industries={industries} currentFounder={currentFounder} />
 
       <div className="space-y-3">
         <ImageSubmitProgress

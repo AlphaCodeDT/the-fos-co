@@ -329,9 +329,23 @@ export interface Organization {
   id: number;
   name: string;
   slug: string;
-  type: 'incubator' | 'accelerator' | 'community' | 'university' | 'government-program';
+  type:
+    | 'incubator'
+    | 'accelerator'
+    | 'investor'
+    | 'venture-capital'
+    | 'angel-network'
+    | 'university'
+    | 'startup-community'
+    | 'government-program'
+    | 'coworking-space'
+    | 'innovation-hub'
+    | 'corporate-innovation'
+    | 'other';
+  status: 'draft' | 'published';
   location?: string | null;
   website?: string | null;
+  description?: string | null;
   logo?: (number | null) | Media;
   parentOrganization?: (number | null) | Organization;
   updatedAt: string;
@@ -804,8 +818,10 @@ export interface OrganizationsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   type?: T;
+  status?: T;
   location?: T;
   website?: T;
+  description?: T;
   logo?: T;
   parentOrganization?: T;
   updatedAt?: T;

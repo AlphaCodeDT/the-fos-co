@@ -1,4 +1,8 @@
+import Image from 'next/image'
+import Link from 'next/link'
+
 import type { Organization } from '@/payload-types'
+import { resolveOrganizationLogoUrl } from '@/lib/media-image'
 import { cn } from '@/lib/utils'
 
 type BackedByListProps = {
@@ -6,22 +10,48 @@ type BackedByListProps = {
   className?: string
 }
 
-export function BackedByList({ organizations, className }: BackedByListProps) {
-  const labels = organizations
-    .map((item) => (typeof item === 'object' && item !== null ? item.name : null))
-    .filter((name): name is string => Boolean(name))
+function OrganizationChip({ org }: { org: Organization }) {
+  const logoUrl = resolveOrganizationLogoUrl(org)
+  const content = (
+    <>
+      {logoUrl ? (
+        <span className="relative h-4 w-4 shrink-0 overflow-hidden rounded">
+          <Image src={logoUrl} alt="" fill className="object-cover" sizes="16px" />
+        </span>
+      ) : (
+        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-brand-white/10 text-[10px] font-semibold text-brand-yellow">
+          {org.name.charAt(0)}
+        </span>
+      )}
+      <span>{org.name}</span>
+    </>
+  )
 
-  if (labels.length === 0) return null
+  const className =
+    'inline-flex items-center gap-2 rounded-lg border border-brand-yellow/35 bg-brand-yellow/10 px-3 py-1.5 text-xs font-semibold tracking-wide text-brand-yellow shadow-[0_0_12px_rgba(255,214,0,0.08)] transition-colors hover:border-brand-yellow/50'
+
+  if (org.slug) {
+    return (
+      <Link href={`/organizations/${org.slug}`} className={className}>
+        {content}
+      </Link>
+    )
+  }
+
+  return <span className={className}>{content}</span>
+}
+
+export function BackedByList({ organizations, className }: BackedByListProps) {
+  const populated = organizations.filter(
+    (item): item is Organization => typeof item === 'object' && item !== null,
+  )
+
+  if (populated.length === 0) return null
 
   return (
     <div className={cn('flex flex-wrap gap-2', className)}>
-      {labels.map((label) => (
-        <span
-          key={label}
-          className="inline-flex rounded-lg border border-brand-yellow/35 bg-brand-yellow/10 px-3 py-1.5 text-xs font-semibold tracking-wide text-brand-yellow shadow-[0_0_12px_rgba(255,214,0,0.08)]"
-        >
-          {label}
-        </span>
+      {populated.map((org) => (
+        <OrganizationChip key={org.id} org={org} />
       ))}
     </div>
   )

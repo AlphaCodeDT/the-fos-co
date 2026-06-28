@@ -2,12 +2,13 @@ import type { CollectionConfig } from 'payload'
 
 import { anyone, isAdminOrEditor } from '@/access'
 import { slugField } from '@/collections/fields/slugField'
+import { ORG_TYPE_OPTIONS } from '@/lib/organization-types'
 
 export const Organizations: CollectionConfig = {
   slug: 'organizations',
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'type', 'slug'],
+    defaultColumns: ['name', 'type', 'status', 'slug'],
   },
   access: {
     read: anyone,
@@ -26,12 +27,16 @@ export const Organizations: CollectionConfig = {
       name: 'type',
       type: 'select',
       required: true,
+      options: [...ORG_TYPE_OPTIONS],
+    },
+    {
+      name: 'status',
+      type: 'select',
+      required: true,
+      defaultValue: 'published',
       options: [
-        { label: 'Incubator', value: 'incubator' },
-        { label: 'Accelerator', value: 'accelerator' },
-        { label: 'Community', value: 'community' },
-        { label: 'University', value: 'university' },
-        { label: 'Government Program', value: 'government-program' },
+        { label: 'Draft', value: 'draft' },
+        { label: 'Published', value: 'published' },
       ],
     },
     {
@@ -41,6 +46,10 @@ export const Organizations: CollectionConfig = {
     {
       name: 'website',
       type: 'text',
+    },
+    {
+      name: 'description',
+      type: 'textarea',
     },
     {
       name: 'logo',

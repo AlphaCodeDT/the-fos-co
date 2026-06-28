@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { BackedBySection } from '@/components/community/BackedByList'
+import { GroupedBackedBySection } from '@/components/community/GroupedBackedBySection'
 import { ChipList } from '@/components/community/ChipList'
 import { CohortBadge } from '@/components/community/CohortBadge'
 import { ClaimStartupButton } from '@/components/community/ClaimStartupButton'
@@ -148,7 +148,7 @@ export default async function StartupProfilePage({ params }: PageProps) {
               </div>
             ) : null}
             {startup.organizations?.length ? (
-              <BackedBySection organizations={startup.organizations} />
+              <GroupedBackedBySection organizations={startup.organizations} />
             ) : null}
           </div>
         ) : null}

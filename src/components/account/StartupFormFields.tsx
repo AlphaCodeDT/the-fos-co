@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label'
 import { CohortFormFields } from '@/components/account/CohortFormFields'
 import { LocationSelectFields } from '@/components/account/LocationSelectFields'
 import { OpportunitySection } from '@/components/account/OpportunitySection'
+import { OrganizationSearchPicker } from '@/components/account/OrganizationSearchPicker'
 import { SocialLinksFormSection } from '@/components/account/SocialLinksFormSection'
 import {
   STARTUP_STAGE_OPTIONS,
@@ -13,17 +14,16 @@ import {
 } from '@/components/account/startup-form-constants'
 import { TeamSection, type CurrentFounder } from '@/components/account/TeamSection'
 import { lexicalToPlainText } from '@/lib/richtext'
-import type { Industry, Organization, Startup } from '@/payload-types'
+import { mapOrganizationsToSearchResults } from '@/lib/organization-search-utils'
+import type { Industry, Startup } from '@/payload-types'
 
 export function StartupFormFields({
   startup,
   industries,
-  organizations,
   currentFounder,
 }: {
   startup?: Startup
   industries: Industry[]
-  organizations: Organization[]
   currentFounder: CurrentFounder
 }) {
   const industryId =
@@ -33,11 +33,7 @@ export function StartupFormFields({
         ? startup.industry
         : undefined
 
-  const selectedOrganizations = new Set(
-    (startup?.organizations || [])
-      .map((item) => (typeof item === 'object' ? item.id : item))
-      .filter((id): id is number => typeof id === 'number'),
-  )
+  const initialOrganizations = mapOrganizationsToSearchResults(startup?.organizations)
 
   return (
     <>
@@ -142,25 +138,7 @@ export function StartupFormFields({
         }}
       />
 
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-medium text-brand-white">
-          Backed by (accelerators &amp; incubators)
-        </legend>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {organizations.map((organization) => (
-            <label key={organization.id} className="flex items-center gap-2 text-sm text-brand-white/80">
-              <input
-                type="checkbox"
-                name="organizations"
-                value={organization.id}
-                defaultChecked={selectedOrganizations.has(organization.id)}
-                className="accent-brand-yellow"
-              />
-              {organization.name}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <OrganizationSearchPicker inputId="organizations" initialOrganizations={initialOrganizations} />
 
       <div className="flex flex-wrap gap-4">
         {(

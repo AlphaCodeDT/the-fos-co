@@ -10,17 +10,15 @@ import { useImageFormSubmit } from '@/components/account/useImageFormSubmit'
 import { StartupFormFields } from '@/components/account/StartupFormFields'
 import { Button } from '@/components/ui/button'
 import { createStartupAction, type AccountActionState } from '@/lib/auth/account-actions'
-import type { Founder, Industry, Organization } from '@/payload-types'
+import type { Founder, Industry } from '@/payload-types'
 
 const initialState: AccountActionState = {}
 
 export function NewStartupForm({
   industries,
-  organizations,
   currentFounder,
 }: {
   industries: Industry[]
-  organizations: Organization[]
   currentFounder: Pick<
     Founder,
     'id' | 'name' | 'slug' | 'headline' | 'avatarUrl' | 'city'
@@ -60,11 +58,7 @@ export function NewStartupForm({
 
       <ImageUploadField id="logo" label="Logo" shape="square" onFileSelect={setPendingFile} />
 
-      <StartupFormFields
-        industries={industries}
-        organizations={organizations}
-        currentFounder={currentFounder}
-      />
+      <StartupFormFields industries={industries} currentFounder={currentFounder} />
 
       <div className="space-y-3">
         <ImageSubmitProgress

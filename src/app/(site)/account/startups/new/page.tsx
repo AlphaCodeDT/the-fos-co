@@ -10,7 +10,7 @@ export const metadata = {
 
 export default async function NewStartupPage() {
   const founder = await requireFounder()
-  const { industries, organizations } = await getTaxonomyOptions()
+  const { industries } = await getTaxonomyOptions()
 
   return (
     <AccountShell
@@ -18,11 +18,7 @@ export default async function NewStartupPage() {
       title="Create startup"
       description="New startups are pending until an editor approves them."
     >
-      <NewStartupForm
-        industries={industries}
-        organizations={organizations}
-        currentFounder={founder}
-      />
+      <NewStartupForm industries={industries} currentFounder={founder} />
     </AccountShell>
   )
 }

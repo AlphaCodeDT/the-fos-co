@@ -2,6 +2,7 @@
 
 import { getCurrentFounder } from '@/lib/auth/founder'
 import { searchFounders } from '@/lib/data/founder-search'
+import { searchOrganizations, validateOrganizationIds } from '@/lib/data/organization-search'
 import { searchStartups } from '@/lib/data/startup-search'
 import { plainTextToLexical } from '@/lib/richtext'
 import { getPayloadClient } from '@/lib/payload'
@@ -28,6 +29,31 @@ function parseIdList(formData: FormData, key: string): number[] {
     .getAll(key)
     .map((value) => Number(value))
     .filter((id) => !Number.isNaN(id))
+}
+
+function parseOrganizationsFromForm(formData: FormData): {
+  touched: boolean
+  ids: number[]
+} {
+  if (formData.get('organizationsTouched') !== '1') {
+    return { touched: false, ids: [] }
+  }
+
+  return { touched: true, ids: parseIdList(formData, 'organizations') }
+}
+
+async function applyOrganizationsFromForm<T extends Partial<Founder> | Partial<Startup>>(
+  data: T,
+  formData: FormData,
+): Promise<T> {
+  const { touched, ids } = parseOrganizationsFromForm(formData)
+
+  if (!touched) {
+    return data
+  }
+
+  const validatedIds = await validateOrganizationIds(ids)
+  return { ...data, organizations: validatedIds }
 }
 
 function parseOptionalString(formData: FormData, key: string): string | undefined {
@@ -153,7 +179,6 @@ function buildFounderProfileData(formData: FormData): Partial<Founder> {
     website: socialLinks.website,
     gender: gender as Founder['gender'],
     industries: parseIdList(formData, 'industries'),
-    organizations: parseIdList(formData, 'organizations'),
     lookingForCoFounder: formData.get('lookingForCoFounder') === 'on',
     openToOpportunities: formData.get('openToOpportunities') === 'on',
   }
@@ -202,7 +227,6 @@ function buildStartupData(formData: FormData): Partial<Startup> {
     teamSize,
     fundingStatus,
     foundedYear,
-    organizations: parseIdList(formData, 'organizations'),
     team: parseTeamRows(formData),
     opportunities: parseOpportunityRows(formData),
     isHiring: formData.get('isHiring') === 'on',
@@ -245,6 +269,16 @@ export async function searchStartupsAction(query: string) {
   return searchStartups(query, founder.id)
 }
 
+export async function searchOrganizationsAction(query: string) {
+  const founder = await getCurrentFounder()
+
+  if (!founder) {
+    return []
+  }
+
+  return searchOrganizations(query)
+}
+
 export async function updateProfileAction(
   _prev: AccountActionState,
   formData: FormData,
@@ -255,7 +289,7 @@ export async function updateProfileAction(
     return { error: 'You must be signed in.' }
   }
 
-  const data = buildFounderProfileData(formData)
+  const data = await applyOrganizationsFromForm(buildFounderProfileData(formData), formData)
 
   if (!data.name) {
     return { error: 'Name is required.' }
@@ -288,7 +322,7 @@ export async function createStartupAction(
     return { error: 'You must be signed in.' }
   }
 
-  const data = buildStartupData(formData)
+  const data = await applyOrganizationsFromForm(buildStartupData(formData), formData)
 
   if (!data.name) {
     return { error: 'Startup name is required.' }
@@ -328,7 +362,7 @@ export async function updateStartupAction(
     return { error: 'Invalid startup.' }
   }
 
-  const data = buildStartupData(formData)
+  const data = await applyOrganizationsFromForm(buildStartupData(formData), formData)
 
   if (!data.name) {
     return { error: 'Startup name is required.' }

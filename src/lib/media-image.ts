@@ -1,4 +1,4 @@
-import type { Founder, Media, Startup } from '@/payload-types'
+import type { Founder, Media, Organization, Startup } from '@/payload-types'
 import { resolveMediaUrl } from '@/lib/url'
 
 type FounderImageSource = Pick<Founder, 'avatarUrl' | 'name'> & {
@@ -6,6 +6,10 @@ type FounderImageSource = Pick<Founder, 'avatarUrl' | 'name'> & {
 }
 
 type StartupImageSource = Pick<Startup, 'logoUrl' | 'name'> & {
+  logo?: Media | number | null
+}
+
+type OrganizationImageSource = Pick<Organization, 'name'> & {
   logo?: Media | number | null
 }
 
@@ -28,6 +32,14 @@ export function resolveStartupLogoUrl(startup: StartupImageSource): string | nul
 
   if (startup.logo && typeof startup.logo === 'object') {
     return resolveMediaUrl(startup.logo.sizes?.thumb?.url || startup.logo.url)
+  }
+
+  return null
+}
+
+export function resolveOrganizationLogoUrl(org: OrganizationImageSource): string | null {
+  if (org.logo && typeof org.logo === 'object') {
+    return resolveMediaUrl(org.logo.sizes?.thumb?.url || org.logo.url)
   }
 
   return null
