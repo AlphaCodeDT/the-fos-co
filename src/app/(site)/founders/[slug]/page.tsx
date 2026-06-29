@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import { GroupedBackedBySection } from '@/components/community/GroupedBackedBySection'
 import { ChipList } from '@/components/community/ChipList'
 import { CommunityProfileContent } from '@/components/community/CommunityProfileContent'
+import { ConnectButton } from '@/components/community/ConnectButton'
 import { CohortBadge } from '@/components/community/CohortBadge'
 import { FounderOpportunityBadges } from '@/components/community/FounderOpportunityBadges'
 import { SocialLinks } from '@/components/community/SocialLinks'
@@ -19,6 +20,7 @@ import { formatLocationLine } from '@/lib/format-location'
 import { hasSocialLinks } from '@/lib/social-links'
 import { buildCommunityProfileMetadata, buildFounderPersonJsonLd } from '@/lib/seo'
 import { isIndexable } from '@/lib/trust'
+import { formatVerificationSourceLabel } from '@/lib/verification-source'
 import { resolveFounderAvatarUrl, resolveStartupLogoUrl } from '@/lib/media-image'
 import { lexicalToPlainText } from '@/lib/richtext'
 
@@ -76,6 +78,7 @@ export default async function FounderProfilePage({ params }: PageProps) {
   }
 
   const jsonLd = isIndexable(founder) ? buildFounderPersonJsonLd(founder) : null
+  const verificationSourceLabel = formatVerificationSourceLabel(founderRaw.verificationSource)
 
   return (
     <>
@@ -103,6 +106,7 @@ export default async function FounderProfilePage({ params }: PageProps) {
               <TrustBadge
                 moderationStatus={founder.moderationStatus}
                 verificationStatus={founder.verificationStatus}
+                sourceLabel={verificationSourceLabel}
               />
             </div>
             {founder.headline ? (
@@ -123,6 +127,9 @@ export default async function FounderProfilePage({ params }: PageProps) {
                 }}
                 className="contents"
               />
+            </div>
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <ConnectButton linkedIn={founder.linkedIn} website={founder.website} />
             </div>
             {hasSocialLinks(socialLinks) ? (
               <SocialLinks links={socialLinks} className="pt-1" />

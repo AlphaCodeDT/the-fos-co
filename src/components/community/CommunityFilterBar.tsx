@@ -77,6 +77,8 @@ export function CommunityFilterBar({
       ...(variant === 'founders'
         ? {
             women: formData.get('women') === 'on' ? '1' : null,
+            open: formData.get('open') === 'on' ? '1' : null,
+            cofounder: formData.get('cofounder') === 'on' ? '1' : null,
           }
         : {}),
       ...(variant === 'startups'
@@ -240,15 +242,35 @@ export function CommunityFilterBar({
         </label>
 
         {variant === 'founders' ? (
-          <label className="flex items-center gap-2 text-sm text-brand-white/80">
-            <input
-              type="checkbox"
-              name="women"
-              defaultChecked={getParam(current, 'women') === '1'}
-              className="accent-brand-yellow"
-            />
-            Women founders
-          </label>
+          <>
+            <label className="flex items-center gap-2 text-sm text-brand-white/80">
+              <input
+                type="checkbox"
+                name="women"
+                defaultChecked={getParam(current, 'women') === '1'}
+                className="accent-brand-yellow"
+              />
+              Women founders
+            </label>
+            <label className="flex items-center gap-2 text-sm text-brand-white/80">
+              <input
+                type="checkbox"
+                name="open"
+                defaultChecked={getParam(current, 'open') === '1'}
+                className="accent-brand-yellow"
+              />
+              Open to opportunities
+            </label>
+            <label className="flex items-center gap-2 text-sm text-brand-white/80">
+              <input
+                type="checkbox"
+                name="cofounder"
+                defaultChecked={getParam(current, 'cofounder') === '1'}
+                className="accent-brand-yellow"
+              />
+              Looking for co-founder
+            </label>
+          </>
         ) : null}
 
         {variant === 'startups' ? (

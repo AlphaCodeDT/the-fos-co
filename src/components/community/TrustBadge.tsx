@@ -3,10 +3,14 @@ import { cn } from '@/lib/utils'
 
 type TrustBadgeProps = CommunityTrustFields & {
   className?: string
+  /** Founder profile only — e.g. "NSRCEL" or "Manual". Cards use plain ✓ Verified. */
+  sourceLabel?: string | null
 }
 
-export function TrustBadge({ className, ...record }: TrustBadgeProps) {
+export function TrustBadge({ className, sourceLabel, ...record }: TrustBadgeProps) {
   if (!showVerifiedBadge(record)) return null
+
+  const label = sourceLabel ? `✓ Verified · ${sourceLabel}` : '✓ Verified'
 
   return (
     <span
@@ -15,7 +19,7 @@ export function TrustBadge({ className, ...record }: TrustBadgeProps) {
         className,
       )}
     >
-      ✓ Verified
+      {label}
     </span>
   )
 }

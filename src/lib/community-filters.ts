@@ -14,6 +14,8 @@ export type FounderFilters = {
   organizationSlug?: string
   verifiedOnly?: boolean
   womenFounders?: boolean
+  openToOpportunities?: boolean
+  lookingForCoFounder?: boolean
   query?: string
   state?: string
   city?: string
@@ -79,6 +81,8 @@ export function parseFounderSearchParams(params: SearchParams): {
       organizationSlug: getParam(params, 'organization'),
       verifiedOnly: isTruthyParam(getParam(params, 'verified')),
       womenFounders: isTruthyParam(getParam(params, 'women')),
+      openToOpportunities: isTruthyParam(getParam(params, 'open')),
+      lookingForCoFounder: isTruthyParam(getParam(params, 'cofounder')),
       query: getParam(params, 'q')?.trim() || undefined,
       ...parseLocationFilters(params),
     },
@@ -141,6 +145,14 @@ export function buildFounderWhere(
 
   if (filters.womenFounders) {
     clauses.push({ gender: { equals: WOMAN_FOUNDER_GENDER } })
+  }
+
+  if (filters.openToOpportunities) {
+    clauses.push({ openToOpportunities: { equals: true } })
+  }
+
+  if (filters.lookingForCoFounder) {
+    clauses.push({ lookingForCoFounder: { equals: true } })
   }
 
   if (filters.query) {

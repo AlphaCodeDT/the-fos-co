@@ -325,4 +325,75 @@ test.describe('founder account flows', () => {
     await page.reload()
     await expect(page.getByText(orgChipLabel)).toHaveCount(0)
   })
+
+  test('connect flags, directory filters, and Connect CTA', async ({ page }) => {
+    const state = requireRunState()
+    const payload = await getBootstrapPayload()
+    const linkedInUrl = 'https://www.linkedin.com/in/e2e-founder'
+    const orgLinkedName = e2eStartupName(state.token, 'OrgLinked')
+    const claimableName = e2eStartupName(state.token, 'Claimable')
+    const founderName = e2eFounderName(state.token, 'Founder')
+
+    await payload.update({
+      collection: 'startups',
+      id: state.startups.orgLinked,
+      data: {
+        isHiring: true,
+        verificationStatus: 'verified',
+      },
+      overrideAccess: true,
+    })
+
+    await payload.update({
+      collection: 'startups',
+      id: state.startups.claimable,
+      data: {
+        isHiring: false,
+      },
+      overrideAccess: true,
+    })
+
+    await payload.update({
+      collection: 'founders',
+      id: state.founders.primary,
+      data: {
+        moderationStatus: 'approved',
+        verificationStatus: 'verified',
+        openToOpportunities: true,
+        linkedIn: linkedInUrl,
+      },
+      overrideAccess: true,
+    })
+
+    const orgLinkedStartup = await payload.findByID({
+      collection: 'startups',
+      id: state.startups.orgLinked,
+      overrideAccess: true,
+    })
+
+    const primaryFounder = await payload.findByID({
+      collection: 'founders',
+      id: state.founders.primary,
+      overrideAccess: true,
+    })
+
+    await page.goto(`/startups/${orgLinkedStartup.slug}`)
+    await expect(page.getByText('✓ Verified')).toBeVisible()
+    await expect(page.getByText('Hiring')).toBeVisible()
+
+    await page.goto('/startups?hiring=1')
+    await expect(page.getByRole('link', { name: orgLinkedName })).toBeVisible()
+    await expect(page.getByRole('link', { name: claimableName })).not.toBeVisible()
+
+    await page.goto(`/founders/${primaryFounder.slug}`)
+    await expect(page.getByText('✓ Verified')).toBeVisible()
+    await expect(page.getByText('Open to opportunities')).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Connect', exact: true })).toHaveAttribute(
+      'href',
+      linkedInUrl,
+    )
+
+    await page.goto('/founders?open=1')
+    await expect(page.getByRole('link', { name: founderName })).toBeVisible()
+  })
 })
