@@ -8,9 +8,11 @@ import { cn } from '@/lib/utils'
 type BackedByListProps = {
   organizations: Array<Organization | number>
   className?: string
+  /** When false, render non-link chips (e.g. inside a card that is already a link). */
+  asLink?: boolean
 }
 
-function OrganizationChip({ org }: { org: Organization }) {
+function OrganizationChip({ org, asLink = true }: { org: Organization; asLink?: boolean }) {
   const logoUrl = resolveOrganizationLogoUrl(org)
   const content = (
     <>
@@ -30,7 +32,7 @@ function OrganizationChip({ org }: { org: Organization }) {
   const className =
     'inline-flex items-center gap-2 rounded-lg border border-brand-yellow/35 bg-brand-yellow/10 px-3 py-1.5 text-xs font-semibold tracking-wide text-brand-yellow shadow-[0_0_12px_rgba(255,214,0,0.08)] transition-colors hover:border-brand-yellow/50'
 
-  if (org.slug) {
+  if (org.slug && asLink) {
     return (
       <Link href={`/organizations/${org.slug}`} className={className}>
         {content}
@@ -41,7 +43,7 @@ function OrganizationChip({ org }: { org: Organization }) {
   return <span className={className}>{content}</span>
 }
 
-export function BackedByList({ organizations, className }: BackedByListProps) {
+export function BackedByList({ organizations, className, asLink = true }: BackedByListProps) {
   const populated = organizations.filter(
     (item): item is Organization => typeof item === 'object' && item !== null,
   )
@@ -51,7 +53,7 @@ export function BackedByList({ organizations, className }: BackedByListProps) {
   return (
     <div className={cn('flex flex-wrap gap-2', className)}>
       {populated.map((org) => (
-        <OrganizationChip key={org.id} org={org} />
+        <OrganizationChip key={org.id} org={org} asLink={asLink} />
       ))}
     </div>
   )

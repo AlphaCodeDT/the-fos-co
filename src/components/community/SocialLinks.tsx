@@ -17,6 +17,8 @@ type SocialLinksProps = {
   /** Show at most this many icons (for compact card layouts). */
   limit?: number
   iconClassName?: string
+  /** When false, render non-link icons (e.g. inside a card that is already a link). */
+  asLink?: boolean
 }
 
 type LinkConfig = {
@@ -38,7 +40,13 @@ const LINK_CONFIG: LinkConfig[] = [
 const iconButtonClassName =
   'inline-flex h-9 w-9 items-center justify-center rounded-full border border-brand-white/15 text-brand-white/70 transition-colors hover:border-brand-yellow/50 hover:bg-brand-yellow/10 hover:text-brand-yellow'
 
-export function SocialLinks({ links, className, limit, iconClassName }: SocialLinksProps) {
+export function SocialLinks({
+  links,
+  className,
+  limit,
+  iconClassName,
+  asLink = true,
+}: SocialLinksProps) {
   const active = LINK_CONFIG.filter((config) => Boolean(links[config.field]?.trim()))
   const visible = typeof limit === 'number' ? active.slice(0, limit) : active
 
@@ -49,6 +57,18 @@ export function SocialLinks({ links, className, limit, iconClassName }: SocialLi
       {visible.map(({ field, label, Icon }) => {
         const href = links[field]?.trim()
         if (!href) return null
+
+        if (!asLink) {
+          return (
+            <span
+              key={field}
+              aria-hidden
+              className={cn(iconButtonClassName, iconClassName)}
+            >
+              <Icon className="h-4 w-4" aria-hidden />
+            </span>
+          )
+        }
 
         return (
           <a

@@ -99,10 +99,10 @@ export function FounderCard({ founder }: FounderCardProps) {
             </div>
             {founder.industries?.length ? <ChipList items={founder.industries} /> : null}
             {founder.organizations?.length ? (
-              <BackedByList organizations={founder.organizations} />
+              <BackedByList organizations={founder.organizations} asLink={false} />
             ) : null}
             {hasSocialLinks(socialLinks) ? (
-              <SocialLinks links={socialLinks} limit={3} iconClassName="h-7 w-7" />
+              <SocialLinks links={socialLinks} limit={3} iconClassName="h-7 w-7" asLink={false} />
             ) : null}
           </div>
         </div>

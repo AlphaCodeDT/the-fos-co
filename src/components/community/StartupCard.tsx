@@ -111,7 +111,7 @@ export function StartupCard({ startup }: StartupCardProps) {
               <p className="break-words text-xs text-brand-white/50">{metadataParts.join(' · ')}</p>
             ) : null}
             {hasSocialLinks(socialLinks) ? (
-              <SocialLinks links={socialLinks} limit={3} iconClassName="h-7 w-7" />
+              <SocialLinks links={socialLinks} limit={3} iconClassName="h-7 w-7" asLink={false} />
             ) : null}
           </div>
         </div>

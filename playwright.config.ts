@@ -27,7 +27,7 @@ export default defineConfig({
   projects: [
     {
       name: 'organizations',
-      testMatch: 'organizations.spec.ts',
+      testMatch: ['organizations.spec.ts', 'smoke.spec.ts'],
     },
     {
       name: 'programs',
