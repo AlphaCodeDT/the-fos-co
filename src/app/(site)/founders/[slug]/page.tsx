@@ -102,7 +102,7 @@ export default async function FounderProfilePage({ params }: PageProps) {
           </div>
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-4xl font-bold text-brand-white">{founder.name}</h1>
+              <h1 className="text-3xl font-bold break-words text-brand-white sm:text-4xl">{founder.name}</h1>
               <TrustBadge
                 moderationStatus={founder.moderationStatus}
                 verificationStatus={founder.verificationStatus}

@@ -44,5 +44,13 @@ export default defineConfig({
       testMatch: 'admin.spec.ts',
       dependencies: ['founder'],
     },
+    {
+      name: 'mobile',
+      testMatch: 'mobile.spec.ts',
+      dependencies: ['admin'],
+      use: {
+        viewport: { width: 390, height: 844 },
+      },
+    },
   ],
 })

@@ -29,7 +29,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="site-root min-h-full flex flex-col bg-brand-black text-brand-white">
+      <body className="site-root min-h-full flex flex-col overflow-x-clip bg-brand-black text-brand-white">
         {children}
       </body>
     </html>

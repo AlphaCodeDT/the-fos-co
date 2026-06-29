@@ -24,7 +24,7 @@ export function ProgramCard({ program, variant = 'compact' }: ProgramCardProps) 
   return (
     <article className="flex h-full flex-col rounded-xl border border-brand-white/10 bg-brand-black/60 p-4">
       <div className="flex flex-1 flex-col gap-2">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <h3 className="text-sm font-medium text-brand-white">
               <Link href={`/programs/${program.slug}`} className="hover:text-brand-yellow">
@@ -43,7 +43,7 @@ export function ProgramCard({ program, variant = 'compact' }: ProgramCardProps) 
             ) : null}
           </div>
           {applyUrl ? (
-            <Button asChild size="sm" className="shrink-0">
+            <Button asChild size="sm" className="w-full shrink-0 sm:w-auto">
               <a href={applyUrl} target="_blank" rel="noopener noreferrer">
                 Apply
               </a>

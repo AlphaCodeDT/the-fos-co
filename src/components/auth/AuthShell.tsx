@@ -12,7 +12,7 @@ export function AuthCard({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-brand-white/10 bg-brand-black/60 p-8">
+    <div className="rounded-2xl border border-brand-white/10 bg-brand-black/60 p-6 sm:p-8">
       <p className="text-xs font-semibold uppercase tracking-wider text-brand-yellow">Founder account</p>
       <h1 className="mt-2 text-2xl font-bold text-brand-white">{title}</h1>
       {subtitle ? <p className="mt-2 text-sm text-brand-white/60">{subtitle}</p> : null}

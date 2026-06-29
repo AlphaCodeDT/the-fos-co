@@ -13,7 +13,7 @@ export function CommunityProfileContent({ content }: CommunityProfileContentProp
 
   return (
     <div
-      className="prose prose-invert max-w-none prose-headings:text-brand-white prose-a:text-brand-yellow prose-strong:text-brand-white"
+      className="prose prose-invert max-w-none prose-headings:text-brand-white prose-a:text-brand-yellow prose-strong:text-brand-white [&_a]:break-words [&_img]:h-auto [&_img]:max-w-full [&_pre]:overflow-x-auto"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   )

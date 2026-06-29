@@ -93,7 +93,7 @@ export function StartupSearchPicker() {
       getKey={(result) => result.slug}
       renderOption={(result) => (
         <div
-          className={`flex w-full items-start gap-3 px-3 py-2.5 ${
+          className={`flex w-full flex-col gap-3 px-3 py-2.5 sm:flex-row sm:items-start sm:justify-between ${
             result.isClaimable ? '' : 'opacity-70'
           }`}
         >
@@ -104,7 +104,7 @@ export function StartupSearchPicker() {
               secondary={result.tagline}
             />
           </div>
-          <div className="flex shrink-0 flex-col items-end gap-2">
+          <div className="flex shrink-0 flex-row items-center gap-2 sm:flex-col sm:items-end">
             <span
               className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${chipClassName(result)}`}
             >

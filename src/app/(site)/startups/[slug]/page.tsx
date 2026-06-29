@@ -111,7 +111,7 @@ export default async function StartupProfilePage({ params }: PageProps) {
           </div>
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-4xl font-bold text-brand-white">{startup.name}</h1>
+              <h1 className="text-3xl font-bold break-words text-brand-white sm:text-4xl">{startup.name}</h1>
               <TrustBadge
                 moderationStatus={startup.moderationStatus}
                 verificationStatus={startup.verificationStatus}
@@ -166,7 +166,7 @@ export default async function StartupProfilePage({ params }: PageProps) {
 
                 if (!displayName) return null
 
-                const rowClassName = `flex items-center justify-between rounded-xl border px-4 py-3 transition-colors ${
+                const rowClassName = `flex flex-col gap-1 rounded-xl border px-4 py-3 sm:flex-row sm:items-center sm:justify-between transition-colors ${
                   member.isPrimary
                     ? 'border-brand-yellow/40 bg-brand-yellow/5'
                     : 'border-brand-white/10 bg-brand-black/60'
@@ -179,8 +179,8 @@ export default async function StartupProfilePage({ params }: PageProps) {
                         href={`/founders/${founder.slug}`}
                         className={`${rowClassName} hover:border-brand-yellow/40`}
                       >
-                        <span className="font-medium text-brand-white">{displayName}</span>
-                        <span className="text-sm text-brand-yellow">{formatTeamRole(member.role)}</span>
+                        <span className="min-w-0 break-words font-medium text-brand-white">{displayName}</span>
+                        <span className="shrink-0 text-sm text-brand-yellow">{formatTeamRole(member.role)}</span>
                       </Link>
                     </li>
                   )
@@ -189,8 +189,8 @@ export default async function StartupProfilePage({ params }: PageProps) {
                 return (
                   <li key={`unlinked-${index}`}>
                     <div className={rowClassName}>
-                      <span className="font-medium text-brand-white">{displayName}</span>
-                      <span className="text-sm text-brand-yellow">{formatTeamRole(member.role)}</span>
+                      <span className="min-w-0 break-words font-medium text-brand-white">{displayName}</span>
+                      <span className="shrink-0 text-sm text-brand-yellow">{formatTeamRole(member.role)}</span>
                     </div>
                   </li>
                 )

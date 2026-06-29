@@ -15,7 +15,7 @@ export function TrustBadge({ className, sourceLabel, ...record }: TrustBadgeProp
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full bg-brand-yellow/15 px-2.5 py-0.5 text-xs font-semibold text-brand-yellow',
+        'inline-flex max-w-full items-center gap-1 whitespace-normal rounded-full bg-brand-yellow/15 px-2.5 py-0.5 text-xs font-semibold text-brand-yellow',
         className,
       )}
     >

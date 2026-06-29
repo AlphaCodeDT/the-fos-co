@@ -78,7 +78,7 @@ export default async function OrganizationProfilePage({ params }: PageProps) {
 
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-4xl font-bold text-brand-white">{organization.name}</h1>
+              <h1 className="text-3xl font-bold break-words text-brand-white sm:text-4xl">{organization.name}</h1>
               <span className="rounded-full border border-brand-yellow/30 bg-brand-yellow/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-yellow">
                 {formatOrgTypeLabel(organization.type)}
               </span>

@@ -28,7 +28,7 @@ export function StartupOpportunitiesList({ opportunities }: StartupOpportunities
               key={`${row.title}-${index}`}
               className="rounded-xl border border-brand-white/10 bg-brand-black/60 p-4"
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-[10px] font-semibold uppercase tracking-wide text-brand-yellow">
@@ -41,7 +41,7 @@ export function StartupOpportunitiesList({ opportunities }: StartupOpportunities
                   ) : null}
                 </div>
                 {applyUrl ? (
-                  <Button asChild size="sm" className="shrink-0">
+                  <Button asChild size="sm" className="w-full shrink-0 sm:w-auto">
                     <a href={applyUrl} target="_blank" rel="noopener noreferrer">
                       Apply
                     </a>

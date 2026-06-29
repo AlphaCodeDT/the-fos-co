@@ -58,9 +58,9 @@ export default async function ProgramProfilePage({ params }: PageProps) {
       <SiteHeader />
       <main className="mx-auto max-w-3xl flex-1 px-4 py-12">
         <div className="space-y-4">
-          <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
             <div className="space-y-3">
-              <h1 className="text-4xl font-bold text-brand-white">{program.name}</h1>
+              <h1 className="text-3xl font-bold break-words text-brand-white sm:text-4xl">{program.name}</h1>
 
               {organization ? (
                 <p className="text-sm text-brand-white/60">
@@ -82,7 +82,7 @@ export default async function ProgramProfilePage({ params }: PageProps) {
             </div>
 
             {applyUrl ? (
-              <Button asChild size="sm" className="shrink-0">
+              <Button asChild size="sm" className="w-full shrink-0 sm:w-auto">
                 <a href={applyUrl} target="_blank" rel="noopener noreferrer">
                   Apply
                 </a>

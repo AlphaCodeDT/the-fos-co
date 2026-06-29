@@ -25,7 +25,7 @@ export default async function ProgramsDirectoryPage() {
       <main className="mx-auto max-w-6xl flex-1 px-4 py-12">
         <div className="mb-10">
           <p className="text-sm font-semibold uppercase tracking-wider text-brand-yellow">Community</p>
-          <h1 className="mt-2 text-4xl font-bold text-brand-white">Programs</h1>
+          <h1 className="mt-2 text-3xl font-bold text-brand-white sm:text-4xl">Programs</h1>
           <p className="mt-3 max-w-2xl text-brand-white/70">
             Upcoming cohorts and accelerator programs from organizations in the ecosystem.
           </p>

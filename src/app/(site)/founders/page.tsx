@@ -49,7 +49,7 @@ export default async function FoundersDirectoryPage({ searchParams }: PageProps)
       <main className="mx-auto max-w-6xl flex-1 px-4 py-12">
         <div className="mb-10">
           <p className="text-sm font-semibold uppercase tracking-wider text-brand-yellow">Community</p>
-          <h1 className="mt-2 text-4xl font-bold text-brand-white">Founders</h1>
+          <h1 className="mt-2 text-3xl font-bold text-brand-white sm:text-4xl">Founders</h1>
           <p className="mt-3 max-w-2xl text-brand-white/70">
             Discover approved founders building across industries and organizations.
           </p>

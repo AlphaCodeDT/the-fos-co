@@ -108,7 +108,7 @@ export function StartupCard({ startup }: StartupCardProps) {
               <OpportunityBadges startup={startup} />
             </div>
             {metadataParts.length > 0 ? (
-              <p className="text-xs text-brand-white/50">{metadataParts.join(' · ')}</p>
+              <p className="break-words text-xs text-brand-white/50">{metadataParts.join(' · ')}</p>
             ) : null}
             {hasSocialLinks(socialLinks) ? (
               <SocialLinks links={socialLinks} limit={3} iconClassName="h-7 w-7" />
